@@ -1,4 +1,4 @@
-import { Chat, MessageType } from '@flyerhq/react-native-chat-ui'
+import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui'
 import React, { useState } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
@@ -62,6 +62,7 @@ export default function App() {
         onSendPress={handleSendPress}
         onAttachmentPress={handleImageSelection}
         user={user}
+        theme={darkTheme}
       />
     </SafeAreaProvider>
   )
