@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@flyerhq/react-native-chat-ui": "^1.4.3",
+    "@react-native-clipboard/clipboard": "^1.12.1",
     "expo": "~49.0.15",
     "expo-splash-screen": "~0.20.5",
     "expo-status-bar": "~1.6.0",

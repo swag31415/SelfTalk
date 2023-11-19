@@ -1,6 +1,7 @@
-import { Chat, MessageType, Theme, darkTheme, defaultTheme } from '@flyerhq/react-native-chat-ui'
-import React, { useState } from 'react'
-import { View, TouchableWithoutFeedback } from 'react-native'
+import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui'
+import React, { useState, ReactNode } from 'react'
+import { View, Text, TouchableWithoutFeedback, ColorValue } from 'react-native'
+import Clipboard from '@react-native-clipboard/clipboard';
 import { SafeAreaProvider} from 'react-native-safe-area-context'
 
 import { launchImageLibrary } from 'react-native-image-picker'
@@ -10,11 +11,42 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default function App() {
   const users = [
-    { id: 'ae6c485e-87ea-4fca-a889-e2af0c043d46', theme: darkTheme },
-    { id: '810bb732-9382-4b43-99fb-ea642c843cc3', theme: defaultTheme }
+    { id: 'ae6c485e-87ea-4fca-a889-e2af0c043d46' },
+    { id: '810bb732-9382-4b43-99fb-ea642c843cc3' },
   ]
+  const userColorMap = users.reduce((m, u, i) => {
+    const colors = darkTheme.colors.userAvatarNameColors
+    m.set(u.id, colors[i % colors.length])
+    return m
+  }, new Map<string, ColorValue>())
   const [messages, setMessages] = useState<MessageType.Any[]>([])
   const [userIdx, setUserIdx] = useState<number>(0)
+
+  const renderBubble = ({
+    child,
+    message,
+    nextMessageInGroup,
+  }: {
+    child: ReactNode
+    message: MessageType.Any
+    nextMessageInGroup: boolean
+  }) => {
+    const isUser = users[userIdx].id === message.author.id
+    const borderRadius = 20
+    return (
+      <View
+        style={{
+          backgroundColor: userColorMap.get(message.author.id),
+          borderRadius: borderRadius,
+          borderBottomLeftRadius: !isUser && !nextMessageInGroup ? 0 : borderRadius,
+          borderBottomRightRadius: isUser && !nextMessageInGroup ? 0 : borderRadius,
+          overflow: 'hidden',
+        }}
+      >
+        {child}
+      </View>
+    )
+  }
 
   const addMessage = (message: MessageType.Any) => {
     setMessages([message, ...messages])
@@ -60,6 +92,12 @@ export default function App() {
     )
   }
 
+  const handleMessageLongPress = (message: MessageType.Any) => {
+    if (message.type === 'text') {
+      Clipboard.setString(message.text);
+    }
+  }
+
   const handleDoubleTap = () => {
     // Switch between users
     setUserIdx((userIdx + 1) % users.length);
@@ -81,10 +119,14 @@ export default function App() {
         <View style={{ flex: 1 }}>
           <Chat
             messages={messages}
+            renderBubble={renderBubble}
             onSendPress={handleSendPress}
             onAttachmentPress={handleImageSelection}
             user={users[userIdx]}
-            theme={users[userIdx].theme}
+            theme={darkTheme}
+            emptyState={() => <Text style={{ transform: [{ scaleX: -1 }], color: darkTheme.colors.primary}}>Who needs a therapist when you have your own number?</Text>}
+            onMessageLongPress={handleMessageLongPress}
+            enableAnimation={true}
           />
         </View>
       </TouchableWithoutFeedback>
