@@ -1,39 +1,33 @@
-import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
 import React, { useState, ReactNode } from 'react';
-import { View, Text, TouchableWithoutFeedback, ColorValue, GestureResponderEvent, NativeTouchEvent } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { View, Text, TouchableWithoutFeedback, NativeTouchEvent, GestureResponderEvent, ColorValue } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { launchImageLibrary } from 'react-native-image-picker';
-
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import Icon from 'react-native-vector-icons/Octicons';
+import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
   const users = [
     { id: 'ae6c485e-87ea-4fca-a889-e2af0c043d46' },
     { id: '810bb732-9382-4b43-99fb-ea642c843cc3' },
   ];
+
   const userColorMap = users.reduce((m, u, i) => {
     const colors = darkTheme.colors.userAvatarNameColors;
     m.set(u.id, colors[i % colors.length]);
     return m;
   }, new Map<string, ColorValue>());
+
   const [messages, setMessages] = useState<MessageType.Any[]>([]);
   const [userIdx, setUserIdx] = useState<number>(0);
   const [nSelected, setNSelected] = useState<number>(0);
 
-  const renderBubble = ({
-    child,
-    message,
-    nextMessageInGroup,
-  }: {
-    child: ReactNode;
-    message: MessageType.Any;
-    nextMessageInGroup: boolean;
-  }) => {
+  const renderBubble = ({ child, message, nextMessageInGroup }: { child: ReactNode; message: MessageType.Any; nextMessageInGroup: boolean }) => {
     const isUser = users[userIdx].id === message.author.id;
     const borderRadius = 20;
+
     return (
       <View
         style={{
@@ -62,6 +56,7 @@ export default function App() {
       text: message.text,
       type: 'text',
     };
+
     addMessage(textMessage);
   };
 
@@ -88,6 +83,7 @@ export default function App() {
             uri: `data:image/*;base64,${response.base64}`,
             width: response.width,
           };
+
           addMessage(imageMessage);
         }
       }
@@ -95,22 +91,22 @@ export default function App() {
   };
 
   const selectMessage = (message: MessageType.Any) => {
-    setMessages(messages.map(m => {
+    setMessages(messages.map((m) => {
       if (m.id !== message.id) return m;
       m.metadata = m.metadata ?? {};
       m.metadata.selected = !m.metadata.selected;
-      setNSelected(nSelected + (m.metadata.selected ? +1 : -1))
+      setNSelected(nSelected + (m.metadata.selected ? 1 : -1));
       return m;
     }));
   };
 
   const handleMessageLongPress = (message: MessageType.Any) => {
-    selectMessage(message)
+    selectMessage(message);
   };
 
   const handleMessagePress = (message: MessageType.Any) => {
-    if (nSelected > 0) selectMessage(message)
-  }
+    if (nSelected > 0) selectMessage(message);
+  };
 
   const handleDoubleTap = () => {
     // Switch between users
@@ -119,66 +115,58 @@ export default function App() {
 
   let lastTap: NativeTouchEvent;
   const handleTouchablePress = (event: GestureResponderEvent) => {
-    const near = (a: number, b: number, tol: number) => Math.abs(a - b) < tol
-    if (lastTap
-      && near(event.nativeEvent.locationX, lastTap.locationX, 50)
-      && near(event.nativeEvent.locationY, lastTap.locationY, 50)
-      && near(event.nativeEvent.timestamp, lastTap.timestamp, 300)
-    ) handleDoubleTap()
-    lastTap = event.nativeEvent
+    const near = (a: number, b: number, tol: number) => Math.abs(a - b) < tol;
+
+    if (
+      lastTap &&
+      near(event.nativeEvent.locationX, lastTap.locationX, 50) &&
+      near(event.nativeEvent.locationY, lastTap.locationY, 50) &&
+      near(event.nativeEvent.timestamp, lastTap.timestamp, 300)
+    ) {
+      handleDoubleTap();
+    }
+
+    lastTap = event.nativeEvent;
   };
 
   const deleteSelected = () => {
-    setMessages(messages.filter(m => !m.metadata || !m.metadata.selected))
-    setNSelected(0)
+    setMessages(messages.filter((m) => !m.metadata || !m.metadata.selected));
+    setNSelected(0);
   };
 
   const copySelected = () => {
-    Clipboard.setString(messages.reduce((t, m) => {
-      if (m.metadata && m.metadata.selected) {
-        if (m.type == 'text') return m.text + '\n' + t
-      }
-      return t
-    }, ''))
-    setMessages(messages.map(m => {
-      if (m.metadata) m.metadata.selected = false
-      return m
-    }))
-    setNSelected(0)
-  }
+    Clipboard.setString(
+      messages.reduce((t, m) => {
+        if (m.metadata && m.metadata.selected) {
+          if (m.type == 'text') return m.text + '\n' + t;
+        }
+        return t;
+      }, '')
+    );
+
+    setMessages(messages.map((m) => {
+      if (m.metadata) m.metadata.selected = false;
+      return m;
+    }));
+
+    setNSelected(0);
+  };
 
   return (
     <SafeAreaProvider>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: darkTheme.colors.inputBackground, paddingTop: 10, paddingBottom: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableWithoutFeedback
-            onPress={() => {/* TODO implement menu */ }}
-            style={{ flexDirection: 'row' }}>
-            <Icon
-              name='three-bars'
-              size={28}
-              color={darkTheme.colors.inputText}
-              style={{ paddingLeft: 10, paddingRight: 10 }}
-            />
+          <TouchableWithoutFeedback onPress={() => {/* TODO implement menu */ }} style={{ flexDirection: 'row' }}>
+            <Icon name='three-bars' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} />
           </TouchableWithoutFeedback>
           <Text style={{ fontSize: 30, fontFamily: 'Trebuchet MS', color: darkTheme.colors.inputText, marginTop: -3.1 }}>{nSelected > 0 ? `Selected: ${nSelected}` : 'SelfTalk'}</Text>
         </View>
-        {nSelected > 0 && <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Icon
-            name='copy'
-            size={28}
-            color={darkTheme.colors.inputText}
-            style={{ paddingLeft: 10, paddingRight: 10 }}
-            onPress={copySelected}
-          />
-          <Icon
-            name='trash'
-            size={28}
-            color={darkTheme.colors.inputText}
-            style={{ paddingLeft: 10, paddingRight: 10 }}
-            onPress={deleteSelected}
-          />
-        </View>}
+        {nSelected > 0 && (
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Icon name='copy' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} onPress={copySelected} />
+            <Icon name='trash' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} onPress={deleteSelected} />
+          </View>
+        )}
       </View>
       <TouchableWithoutFeedback onPress={handleTouchablePress}>
         <View style={{ flex: 1 }}>
