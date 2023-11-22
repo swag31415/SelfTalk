@@ -94,7 +94,7 @@ export default function App() {
     );
   };
 
-  const handleMessageLongPress = (message: MessageType.Any) => {
+  const selectMessage = (message: MessageType.Any) => {
     setMessages(messages.map(m => {
       if (m.id !== message.id) return m;
       m.metadata = m.metadata ?? {};
@@ -103,6 +103,14 @@ export default function App() {
       return m;
     }));
   };
+
+  const handleMessageLongPress = (message: MessageType.Any) => {
+    selectMessage(message)
+  };
+
+  const handleMessagePress = (message: MessageType.Any) => {
+    if (nSelected > 0) selectMessage(message)
+  }
 
   const handleDoubleTap = () => {
     // Switch between users
@@ -123,7 +131,7 @@ export default function App() {
   const deleteSelected = () => {
     setMessages(messages.filter(m => !m.metadata || !m.metadata.selected))
     setNSelected(0)
-  }
+  };
 
   const copySelected = () => {
     Clipboard.setString(messages.reduce((t, m) => {
@@ -186,6 +194,7 @@ export default function App() {
                 Who needs a therapist when you have your own number?
               </Text>
             )}
+            onMessagePress={handleMessagePress}
             onMessageLongPress={handleMessageLongPress}
             enableAnimation={true}
           />
