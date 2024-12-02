@@ -29,7 +29,8 @@
     "react-native-screens": "^4.3.0",
     "react-native-vector-icons": "^10.2.0",
     "sharp-cli": "^5.1.0",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "expo-sqlite": "~15.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

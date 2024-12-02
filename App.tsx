@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, useEffect } from 'react';
 import { View, Text, TouchableWithoutFeedback, NativeTouchEvent, GestureResponderEvent, ColorValue } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -8,7 +8,7 @@ import Icon from 'react-native-vector-icons/Octicons';
 import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { Message } from './models/Message';
+import { DatabaseProviderWrapper, useDatabase } from './message_db'
 
 function App() {
   const users = [
@@ -24,8 +24,7 @@ function App() {
 
   const [userIdx, setUserIdx] = useState<number>(0);
 
-  const [messages, setMessages] = useState<Message[]>([]);
-  // const mongoMessagesSelected = useQuery(Message, messages => messages.filtered('selected == true').sorted('createdAt', false))
+  const { messages, updateMessages, addMessage } = useDatabase()
 
   const renderBubble = ({ child, message, nextMessageInGroup }: { child: ReactNode; message: MessageType.Any; nextMessageInGroup: boolean }) => {
     const isUser = users[userIdx].id === message.author.id;
@@ -45,10 +44,6 @@ function App() {
         {child}
       </View>
     );
-  };
-
-  const addMessage = (message: MessageType.Any) => {
-    setMessages([Message.generate(message), ...messages]);
   };
 
   const handleSendPress = (message: MessageType.PartialText) => {
@@ -167,7 +162,7 @@ function App() {
       <TouchableWithoutFeedback onPress={handleTouchablePress}>
         <View style={{ flex: 1 }}>
           <Chat
-            messages={messages.map(m => JSON.parse(m.messageJson))}
+            messages={messages}
             renderBubble={renderBubble}
             onSendPress={handleSendPress}
             onAttachmentPress={handleImageSelection}
@@ -191,6 +186,8 @@ function App() {
 
 export default function AppWrapper() {
   return (
-    <App></App>
+    <DatabaseProviderWrapper>
+      <App></App>
+    </DatabaseProviderWrapper>
   );
 }
