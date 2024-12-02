@@ -8,9 +8,7 @@ import Icon from 'react-native-vector-icons/Octicons';
 import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import MessageContext, { Message } from './models/Message';
-import { UpdateMode } from 'realm';
-const {useRealm, useQuery, RealmProvider} = MessageContext;
+import { Message } from './models/Message';
 
 function App() {
   const users = [
@@ -26,9 +24,8 @@ function App() {
 
   const [userIdx, setUserIdx] = useState<number>(0);
 
-  const realm = useRealm()
-  const mongoMessages = useQuery(Message, messages => messages.sorted('createdAt', true))
-  const mongoMessagesSelected = useQuery(Message, messages => messages.filtered('selected == true').sorted('createdAt', false))
+  const [messages, setMessages] = useState<Message[]>([]);
+  // const mongoMessagesSelected = useQuery(Message, messages => messages.filtered('selected == true').sorted('createdAt', false))
 
   const renderBubble = ({ child, message, nextMessageInGroup }: { child: ReactNode; message: MessageType.Any; nextMessageInGroup: boolean }) => {
     const isUser = users[userIdx].id === message.author.id;
@@ -51,9 +48,7 @@ function App() {
   };
 
   const addMessage = (message: MessageType.Any) => {
-    realm.write(() => {
-      realm.create('Message', Message.generate(message));
-    });
+    setMessages([Message.generate(message), ...messages]);
   };
 
   const handleSendPress = (message: MessageType.PartialText) => {
@@ -99,11 +94,11 @@ function App() {
   };
 
   const selectMessage = (message: MessageType.Any) => {
-    realm.write(() => {
-      message.metadata = message.metadata ?? {};
-      message.metadata.selected = !message.metadata.selected
-      realm.create('Message', Message.generate(message, message.metadata.selected), UpdateMode.Modified);
-    })
+    // realm.write(() => {
+    //   message.metadata = message.metadata ?? {};
+    //   message.metadata.selected = !message.metadata.selected
+    //   realm.create('Message', Message.generate(message, message.metadata.selected), UpdateMode.Modified);
+    // })
   };
 
   const handleMessageLongPress = (message: MessageType.Any) => {
@@ -111,7 +106,7 @@ function App() {
   };
 
   const handleMessagePress = (message: MessageType.Any) => {
-    if (mongoMessagesSelected.length > 0) selectMessage(message);
+    // if (mongoMessagesSelected.length > 0) selectMessage(message);
   };
 
   const handleDoubleTap = () => {
@@ -136,21 +131,21 @@ function App() {
   };
 
   const deleteSelected = () => {
-    realm.write(() => {
-      realm.delete(mongoMessagesSelected)
-    })
+    // realm.write(() => {
+    //   realm.delete(mongoMessagesSelected)
+    // })
   };
 
   const copySelected = () => {
-    realm.write(() => {
-      Clipboard.setString(mongoMessagesSelected.map(m => m.text ?? '').join('\n'));
-      for (const messageSelected of mongoMessagesSelected) {
-        const message: MessageType.Any = JSON.parse(messageSelected.messageJson)
-        message.metadata!.selected = false
-        messageSelected.messageJson = JSON.stringify(message)
-        messageSelected.selected = false
-      }
-    })
+    // realm.write(() => {
+    //   Clipboard.setString(mongoMessagesSelected.map(m => m.text ?? '').join('\n'));
+    //   for (const messageSelected of mongoMessagesSelected) {
+    //     const message: MessageType.Any = JSON.parse(messageSelected.messageJson)
+    //     message.metadata!.selected = false
+    //     messageSelected.messageJson = JSON.stringify(message)
+    //     messageSelected.selected = false
+    //   }
+    // })
   };
 
   return (
@@ -160,19 +155,19 @@ function App() {
           <TouchableWithoutFeedback onPress={() => {/* TODO implement menu */ }} style={{ flexDirection: 'row' }}>
             <Icon name='three-bars' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} />
           </TouchableWithoutFeedback>
-          <Text style={{ fontSize: 30, fontFamily: 'Trebuchet MS', color: darkTheme.colors.inputText, marginTop: -3.1 }}>{mongoMessagesSelected.length > 0 ? `Selected: ${mongoMessagesSelected.length}` : 'SelfTalk'}</Text>
+          {/* <Text style={{ fontSize: 30, fontFamily: 'Trebuchet MS', color: darkTheme.colors.inputText, marginTop: -3.1 }}>{mongoMessagesSelected.length > 0 ? `Selected: ${mongoMessagesSelected.length}` : 'SelfTalk'}</Text> */}
         </View>
-        {mongoMessagesSelected.length > 0 && (
+        {/* {mongoMessagesSelected.length > 0 && (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Icon name='copy' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} onPress={copySelected} />
             <Icon name='trash' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} onPress={deleteSelected} />
           </View>
-        )}
+        )} */}
       </View>
       <TouchableWithoutFeedback onPress={handleTouchablePress}>
         <View style={{ flex: 1 }}>
           <Chat
-            messages={mongoMessages.map(m => JSON.parse(m.messageJson))}
+            messages={messages.map(m => JSON.parse(m.messageJson))}
             renderBubble={renderBubble}
             onSendPress={handleSendPress}
             onAttachmentPress={handleImageSelection}
@@ -196,8 +191,6 @@ function App() {
 
 export default function AppWrapper() {
   return (
-    <RealmProvider>
-      <App></App>
-    </RealmProvider>
+    <App></App>
   );
 }

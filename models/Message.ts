@@ -1,8 +1,6 @@
 import { MessageType } from '@flyerhq/react-native-chat-ui';
-import {Realm, createRealmContext} from '@realm/react';
-import { ObjectSchema } from 'realm';
 
-export class Message extends Realm.Object<Message> {
+export class Message {
   messageJson!: string;
   id!: string;
   createdAt!: number;
@@ -22,22 +20,4 @@ export class Message extends Realm.Object<Message> {
       }),
     }
   }
-
-  static schema: ObjectSchema = {
-    name: 'Message',
-    properties: {
-      messageJson: 'string',
-      id: 'string',
-      createdAt: 'double',
-      type: 'string',
-      selected: 'bool',
-      text: 'string?',
-    },
-    primaryKey: 'id',
-  }
 }
-
-const config = {
-  schema: [Message],
-};
-export default createRealmContext(config);
