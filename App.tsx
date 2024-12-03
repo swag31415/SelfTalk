@@ -1,14 +1,15 @@
-import React, { useState, ReactNode, useEffect } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { View, Text, TouchableWithoutFeedback, NativeTouchEvent, GestureResponderEvent, ColorValue } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
 import { launchImageLibrary } from 'react-native-image-picker';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import Icon from 'react-native-vector-icons/Octicons';
 import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { setStringAsync } from 'expo-clipboard';
+import { StatusBar } from 'expo-status-bar';
 
-import { DatabaseProviderWrapper, useDatabase } from './message_db'
+import { DatabaseProviderWrapper, useDatabase } from './message_db';
 
 function App() {
   const users = [
@@ -24,7 +25,7 @@ function App() {
 
   const [userIdx, setUserIdx] = useState<number>(0);
 
-  const { messages, updateMessages, addMessage } = useDatabase()
+  const { selectedMessagesCount, messages, toggleSelectMessage, addMessage, deleteSelected, getSelected } = useDatabase()
 
   const renderBubble = ({ child, message, nextMessageInGroup }: { child: ReactNode; message: MessageType.Any; nextMessageInGroup: boolean }) => {
     const isUser = users[userIdx].id === message.author.id;
@@ -88,20 +89,12 @@ function App() {
     );
   };
 
-  const selectMessage = (message: MessageType.Any) => {
-    // realm.write(() => {
-    //   message.metadata = message.metadata ?? {};
-    //   message.metadata.selected = !message.metadata.selected
-    //   realm.create('Message', Message.generate(message, message.metadata.selected), UpdateMode.Modified);
-    // })
-  };
-
   const handleMessageLongPress = (message: MessageType.Any) => {
-    selectMessage(message);
+    toggleSelectMessage(message);
   };
 
   const handleMessagePress = (message: MessageType.Any) => {
-    // if (mongoMessagesSelected.length > 0) selectMessage(message);
+    if (selectedMessagesCount > 0) toggleSelectMessage(message);
   };
 
   const handleDoubleTap = () => {
@@ -125,39 +118,30 @@ function App() {
     lastTap = event.nativeEvent;
   };
 
-  const deleteSelected = () => {
-    // realm.write(() => {
-    //   realm.delete(mongoMessagesSelected)
-    // })
-  };
-
-  const copySelected = () => {
-    // realm.write(() => {
-    //   Clipboard.setString(mongoMessagesSelected.map(m => m.text ?? '').join('\n'));
-    //   for (const messageSelected of mongoMessagesSelected) {
-    //     const message: MessageType.Any = JSON.parse(messageSelected.messageJson)
-    //     message.metadata!.selected = false
-    //     messageSelected.messageJson = JSON.stringify(message)
-    //     messageSelected.selected = false
-    //   }
-    // })
+  const copySelected = async () => {
+    const selectedMessages = await getSelected();
+    setStringAsync(selectedMessages.map(m => m.text ?? '').toReversed().join('\n'));
+    for (const messageSelected of selectedMessages) {
+      toggleSelectMessage(messageSelected);
+    }
   };
 
   return (
     <SafeAreaProvider>
+      <StatusBar translucent={false}/>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: darkTheme.colors.inputBackground, paddingTop: 10, paddingBottom: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableWithoutFeedback onPress={() => {/* TODO implement menu */ }} style={{ flexDirection: 'row' }}>
             <Icon name='three-bars' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} />
           </TouchableWithoutFeedback>
-          {/* <Text style={{ fontSize: 30, fontFamily: 'Trebuchet MS', color: darkTheme.colors.inputText, marginTop: -3.1 }}>{mongoMessagesSelected.length > 0 ? `Selected: ${mongoMessagesSelected.length}` : 'SelfTalk'}</Text> */}
+          <Text style={{ fontSize: 30, fontFamily: 'Trebuchet MS', color: darkTheme.colors.inputText, marginTop: -3.1 }}>{selectedMessagesCount > 0 ? `Selected: ${selectedMessagesCount}` : 'SelfTalk'}</Text>
         </View>
-        {/* {mongoMessagesSelected.length > 0 && (
+        {selectedMessagesCount > 0 && (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Icon name='copy' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} onPress={copySelected} />
             <Icon name='trash' size={28} color={darkTheme.colors.inputText} style={{ paddingLeft: 10, paddingRight: 10 }} onPress={deleteSelected} />
           </View>
-        )} */}
+        )}
       </View>
       <TouchableWithoutFeedback onPress={handleTouchablePress}>
         <View style={{ flex: 1 }}>
