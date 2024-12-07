@@ -6,7 +6,7 @@ import { darkTheme } from '@flyerhq/react-native-chat-ui';
 
 const styles = {
     container: {
-        height: '100%',
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
