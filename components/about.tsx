@@ -1,50 +1,16 @@
 import React from 'react';
-import { ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { darkTheme } from '@flyerhq/react-native-chat-ui';
 
-const styles = {
-  container: {
-    flex: 1,
-    backgroundColor: darkTheme.colors.background,
-  } as ViewStyle,
-  title: {
-    fontSize: 28,
-    color: darkTheme.colors.primary,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  } as TextStyle,
-  content: {
-    fontSize: 16,
-    color: darkTheme.colors.inputText,
-    lineHeight: 24,
-    textAlign: 'left',
-    marginBottom: 40,
-  } as TextStyle,
-  italic: {
-    fontStyle: 'italic',
-  } as TextStyle,
-  button: {
-    backgroundColor: darkTheme.colors.primary,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 8
-  },
-  buttonText: {
-    color: darkTheme.colors.inputText,
-    fontSize: 16,
-    fontWeight: '600',
-  } as TextStyle,
-};
+import { styles } from './styles'
 
 export default function AboutScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
+    <View style={styles.baseContainer}>
+      <ScrollView contentContainerStyle={styles.padded}>
         <Text style={styles.title}>About SelfTalk 💭✨</Text>
         <Text style={styles.content}>
           Like most great ideas, SelfTalk was born from a lifetime of frustration. Ever since I was a kid,
