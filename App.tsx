@@ -120,7 +120,7 @@ function App() {
 
   const copySelected = async () => {
     const selectedMessages = await getSelected();
-    setStringAsync(selectedMessages.map(m => m.text ?? '').toReversed().join('\n'));
+    setStringAsync(selectedMessages.map(m => m.type == 'text' ? m.text : '').toReversed().join('\n'));
     for (const messageSelected of selectedMessages) {
       toggleSelectMessage(messageSelected);
     }

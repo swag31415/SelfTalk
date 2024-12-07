@@ -3,6 +3,15 @@ import { MessageType } from '@flyerhq/react-native-chat-ui';
 import { SQLiteDatabase, SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
+interface DatabaseMessage {
+    id: string;
+    messageJson: string;
+    createdAt: number;
+    type: string;
+    selected: number;
+    text: string | null;
+}
+
 const initializeDatabase = async (db: SQLiteDatabase) => {
     await db.withTransactionAsync(async () => {
         await db.execAsync(`CREATE TABLE IF NOT EXISTS messages (
@@ -18,13 +27,13 @@ const initializeDatabase = async (db: SQLiteDatabase) => {
 
 // Define the shape of the context
 interface DatabaseContextProps {
-    messages: any[];
+    messages: MessageType.Any[];
     selectedMessagesCount: number;
     updateMessages: () => Promise<void>;
     toggleSelectMessage: (message: MessageType.Any) => Promise<void>;
     addMessage: (message: MessageType.Any, selected?: boolean) => Promise<void>;
     deleteSelected: () => Promise<void>;
-    getSelected: () => Promise<any[]>;
+    getSelected: () => Promise<MessageType.Any[]>;
 }
 
 // Create the context
@@ -33,13 +42,13 @@ const DatabaseContext = createContext<DatabaseContextProps | undefined>(undefine
 // Provider component
 function DatabaseProvider({ children }: { children: React.ReactNode }) {
     const db = useSQLiteContext();
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<MessageType.Any[]>([]);
     const [selectedMessagesCount, setSelectedMessagesCount] = useState<number>(0);
 
     async function updateMessages() {
-        const msgs = await db.getAllAsync('SELECT * FROM messages ORDER BY createdAt DESC;');
-        setMessages(msgs.map((msg: any) => JSON.parse(msg.messageJson)));
-        const count: {selected_count: number} | null = await db.getFirstAsync(
+        const msgs = await db.getAllAsync<DatabaseMessage>('SELECT * FROM messages ORDER BY createdAt DESC;');
+        setMessages(msgs.map<MessageType.Any>((msg: DatabaseMessage) => JSON.parse(msg.messageJson)));
+        const count: { selected_count: number } | null = await db.getFirstAsync(
             'SELECT COUNT(*) AS selected_count FROM messages WHERE selected = 1;'
         );
         setSelectedMessagesCount(count?.selected_count ?? 0);
@@ -76,8 +85,8 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
     }
 
     async function getSelected() {
-        const msgs = await db.getAllAsync('SELECT * FROM messages WHERE selected = 1 ORDER BY createdAt DESC;');
-        return msgs.map((msg: any) => JSON.parse(msg.messageJson));
+        const msgs = await db.getAllAsync<DatabaseMessage>('SELECT * FROM messages WHERE selected = 1 ORDER BY createdAt DESC;');
+        return msgs.map<MessageType.Any>((msg: DatabaseMessage) => JSON.parse(msg.messageJson));
     }
 
     // Initial fetch
@@ -112,10 +121,10 @@ export function useDatabase() {
 // Wrapping in the sqlite provider so it all works
 export function DatabaseProviderWrapper({ children }: { children: React.ReactNode }) {
     return (
-    <SQLiteProvider databaseName='messages.db' onInit={initializeDatabase}>
-        <DatabaseProvider>
-            {children}
-        </DatabaseProvider>
-    </SQLiteProvider>
+        <SQLiteProvider databaseName='messages.db' onInit={initializeDatabase}>
+            <DatabaseProvider>
+                {children}
+            </DatabaseProvider>
+        </SQLiteProvider>
     );
 }
