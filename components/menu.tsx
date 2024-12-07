@@ -5,11 +5,14 @@ import { MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
 import * as Clipboard from 'expo-clipboard';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import * as FileSystem from 'expo-file-system';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useDatabase } from './messagedb';
 
 export default function () {
   const { selectedMessagesCount, messages, toggleSelectMessage, addMessage, deleteSelected, getSelected } = useDatabase()
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const copySelected = async () => {
     const selectedMessages = await getSelected();
@@ -65,11 +68,11 @@ export default function () {
               optionText: { padding: 10, ...darkTheme.fonts.receivedMessageBodyTextStyle }
             }}
           >
-            <MenuOption onSelect={() => alert(`not yet implemented`)} text='Settings' />
+            <MenuOption onSelect={() => navigation.navigate('Settings')} text='Settings' />
             <MenuOption onSelect={importChat} text='Import from Clipboard' />
             <MenuOption onSelect={exportChatToClipboard} text='Export to Clipboard' />
             <MenuOption onSelect={exportChatToFile} text='Export to File' />
-            <MenuOption onSelect={() => alert(`not yet implemented`)} text='About' />
+            <MenuOption onSelect={() => navigation.navigate('About')} text='About' />
           </MenuOptions>
         </Menu>
       </View>
