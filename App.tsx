@@ -4,16 +4,24 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MenuProvider } from 'react-native-popup-menu';
 import { DatabaseProviderWrapper } from './components/messagedb';
+import { NavigationContainer } from '@react-navigation/native';
+
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Menu from './components/menu';
 import Chat from './components/chat';
+import Splash from './components/splash';
 
 function App() {
+  const Stack = createNativeStackNavigator();
   return (
     <SafeAreaProvider>
-      <StatusBar translucent={false}/>
-      <Menu/>
-      <Chat/>
+      <StatusBar translucent={false} />
+      <Menu />
+      <Stack.Navigator initialRouteName='Splash' screenOptions={{ "headerShown": false }}>
+        <Stack.Screen name="Splash" component={Splash} />
+        <Stack.Screen name="Chat" component={Chat} />
+      </Stack.Navigator>
     </SafeAreaProvider>
   );
 }
@@ -22,7 +30,9 @@ export default function AppWrapper() {
   return (
     <DatabaseProviderWrapper>
       <MenuProvider>
-        <App></App>
+        <NavigationContainer>
+          <App></App>
+        </NavigationContainer>
       </MenuProvider>
     </DatabaseProviderWrapper>
   );
