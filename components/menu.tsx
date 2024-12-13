@@ -1,17 +1,16 @@
 import React from 'react';
-import { View, Text, ToastAndroid } from 'react-native';
+import { View, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/Octicons';
-import { MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
+import { darkTheme } from '@flyerhq/react-native-chat-ui';
 import * as Clipboard from 'expo-clipboard';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
-import * as FileSystem from 'expo-file-system';
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useDatabase } from './messagedb';
+import { useDatabase } from './db';
 
 export default function () {
-  const { selectedMessagesCount, messages, toggleSelectMessage, addMessage, deleteSelected, getSelected } = useDatabase()
+  const { selectedMessagesCount, toggleSelectMessage, deleteSelected, getSelected } = useDatabase()
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   const copySelected = async () => {
@@ -21,36 +20,6 @@ export default function () {
       toggleSelectMessage(messageSelected);
     }
   };
-
-  const getChatString = () => JSON.stringify(messages)
-
-  const exportChatToFile = async () => {
-    const request = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync()
-    if (request.granted) {
-      const fname = `log ${(new Date()).toLocaleString()}.json`
-      const furi = await FileSystem.StorageAccessFramework.createFileAsync(request.directoryUri, fname, 'text')
-      await FileSystem.writeAsStringAsync(furi, getChatString())
-      ToastAndroid.show('File Saved', ToastAndroid.SHORT)
-    } else {
-      alert('failed to get permission to save files')
-    }
-  }
-
-  const exportChatToClipboard = () => {
-    Clipboard.setStringAsync(getChatString())
-  }
-
-  const importChat = async () => {
-    if (!await Clipboard.hasStringAsync()) alert('could not find string in clipboard');
-    const data = await Clipboard.getStringAsync();
-    try {
-      const imported_messages = JSON.parse(data) as MessageType.Any[];
-      imported_messages.forEach(m => addMessage(m));
-      ToastAndroid.show('Imported Successfully', ToastAndroid.SHORT)
-    } catch (error) {
-      alert("Failed to import messages from clipboard. Look at the export format to get a sense of what is expected. Don't import messages you already have! (UUIDs should be different).")
-    }
-  }
 
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: darkTheme.colors.inputBackground, paddingTop: 10, paddingBottom: 8 }}>
@@ -69,9 +38,6 @@ export default function () {
             }}
           >
             <MenuOption onSelect={() => navigation.navigate('Settings')} text='Settings' />
-            <MenuOption onSelect={importChat} text='Import from Clipboard' />
-            <MenuOption onSelect={exportChatToClipboard} text='Export to Clipboard' />
-            <MenuOption onSelect={exportChatToFile} text='Export to File' />
             <MenuOption onSelect={() => navigation.navigate('About')} text='About' />
           </MenuOptions>
         </Menu>

@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MenuProvider } from 'react-native-popup-menu';
-import { DatabaseProviderWrapper } from './components/messagedb';
+import { DatabaseProviderWrapper } from './components/db';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';

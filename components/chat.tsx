@@ -3,7 +3,7 @@ import { View, Text, TouchableWithoutFeedback, NativeTouchEvent, GestureResponde
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
-import { useDatabase } from './messagedb';
+import { useDatabase } from './db';
 import { launchImageLibrary } from 'react-native-image-picker';
 
 export default function () {
@@ -20,7 +20,7 @@ export default function () {
 
   const [userIdx, setUserIdx] = useState<number>(0);
 
-  const { selectedMessagesCount, messages, toggleSelectMessage, addMessage, deleteSelected, getSelected } = useDatabase()
+  const { selectedMessagesCount, messages, toggleSelectMessage, addMessage } = useDatabase()
 
   const renderBubble = ({ child, message, nextMessageInGroup }: { child: ReactNode; message: MessageType.Any; nextMessageInGroup: boolean }) => {
     const isUser = users[userIdx].id === message.author.id;

@@ -13,14 +13,25 @@ interface DatabaseMessage {
 
 const initializeDatabase = async (db: SQLiteDatabase) => {
   await db.withTransactionAsync(async () => {
-    await db.execAsync(`CREATE TABLE IF NOT EXISTS messages (
+    // Messages table
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS messages (
         id TEXT PRIMARY KEY NOT NULL,
         messageJson TEXT NOT NULL,
         createdAt INTEGER NOT NULL,
         type TEXT NOT NULL,
         selected INTEGER NOT NULL,
         text TEXT
-      );`);
+      );
+    `);
+
+    // Settings table
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS settings (
+        name TEXT PRIMARY KEY NOT NULL,
+        value TEXT NOT NULL
+      );
+    `);
   });
 };
 
@@ -33,6 +44,10 @@ interface DatabaseContextProps {
   addMessage: (message: MessageType.Any, selected?: boolean) => Promise<void>;
   deleteSelected: () => Promise<void>;
   getSelected: () => Promise<MessageType.Any[]>;
+
+  // Settings management
+  getSetting: (name: string) => Promise<string | null>;
+  setSetting: (name: string, value: string) => Promise<void>;
 }
 
 // Create the context
@@ -88,6 +103,24 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
     return msgs.map<MessageType.Any>((msg: DatabaseMessage) => JSON.parse(msg.messageJson));
   }
 
+  async function getSetting(name: string): Promise<string | null> {
+    const result = await db.getFirstAsync<{ value: string }>(
+      'SELECT value FROM settings WHERE name = ?;',
+      [name]
+    );
+    console.log(`got ${name} as ${result?.value ?? null}`);
+    return result?.value ?? null;
+  }
+
+  async function setSetting(name: string, value: string): Promise<void> {
+    await db.runAsync(
+      `INSERT INTO settings (name, value) VALUES (?, ?)
+       ON CONFLICT(name) DO UPDATE SET value = excluded.value;`,
+      [name, value]
+    );
+    console.log(`set ${name} as ${value}`);
+  }
+
   // Initial fetch
   useEffect(() => {
     updateMessages();
@@ -101,7 +134,9 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
       toggleSelectMessage,
       addMessage,
       deleteSelected,
-      getSelected
+      getSelected,
+      getSetting,
+      setSetting
     }}>
       {children}
     </DatabaseContext.Provider>
