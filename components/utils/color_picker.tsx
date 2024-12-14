@@ -1,5 +1,5 @@
 // Taken from https://github.com/alabsi91/reanimated-color-picker/tree/main/ExampleExpo
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
@@ -18,15 +18,16 @@ export default function ColorPickerThing({ value, setValue }: { value: string, s
   const selectedColor = useSharedValue(value);
   const backgroundColorStyle = useAnimatedStyle(() => ({ backgroundColor: selectedColor.value }));
 
+  useEffect(() => setValue(selectedColor.value), [showModal]);
+
   const onColorSelect = (color: returnedResults) => {
     selectedColor.value = color.hex;
-    setValue(color.hex);
   };
 
   return (
     <>
-      <Pressable style={{...styles.openButton, backgroundColor: value}} onPress={() => setShowModal(true)}>
-        <Text style={styles.centeredText}>{value}</Text>
+      <Pressable style={[styles.openButton, { backgroundColor: value }]} onPress={() => setShowModal(true)}>
+        <Text style={styles.centeredText}>{'#fff'}</Text>
       </Pressable>
 
       <Modal onRequestClose={() => setShowModal(false)} visible={showModal} animationType='slide'>
