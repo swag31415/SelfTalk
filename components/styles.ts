@@ -2,7 +2,7 @@ import { TextStyle, ViewStyle } from 'react-native';
 import { Theme } from '@flyerhq/react-native-chat-ui';
 
 export function getStyles(theme: Theme) {
-    const fontFamily = 'monospace'; // Define the font globally
+    const fontFamily = 'System'; // Define the font globally
 
     return {
         baseContainer: {

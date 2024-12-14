@@ -22,6 +22,7 @@ interface SettingsContextProps {
   updateFont: (fontName: string) => void;
   fontSize: number;
   updateFontSize: (fontSize: number) => void;
+  resetSettings: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextProps | undefined>(undefined);
@@ -34,6 +35,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [otherBubbleColor, setOtherBubbleColor] = useState('#FF9500');
   const [font, setFont] = useState('System');
   const [fontSize, setFontSize] = useState(16);
+
+  function resetSettings() {
+    setTheme(darkTheme);
+    setUserBubbleColor('#007AFF');
+    setOtherBubbleColor('#FF9500');
+    setFont('System');
+    setFontSize(16);
+  }
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -78,6 +87,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       otherBubbleColor, updateOtherBubbleColor,
       font, updateFont,
       fontSize, updateFontSize,
+      resetSettings
     }}>
       {children}
     </SettingsContext.Provider>
@@ -95,8 +105,8 @@ export function useSettings() {
 export default function Settings() {
   const { messages, addMessage } = useDatabase();
   const {
-    theme, userBubbleColor, otherBubbleColor, font, fontSize,
-    updateTheme, updateUserBubbleColor, updateOtherBubbleColor, updateFont, updateFontSize,
+    theme, userBubbleColor, otherBubbleColor,
+    updateTheme, updateUserBubbleColor, updateOtherBubbleColor, resetSettings
   } = useSettings();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
@@ -154,24 +164,6 @@ export default function Settings() {
           <ColorPickerThing value={otherBubbleColor} setValue={updateOtherBubbleColor}/>
         </View>
 
-        {/* Font and Font Size */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Font Settings</Text>
-          <TextInput
-            style={styles.input}
-            value={font}
-            placeholder="Font Name (e.g., System, Arial)"
-            onChangeText={updateFont}
-          />
-          <TextInput
-            style={styles.input}
-            value={fontSize.toString()}
-            placeholder="Font Size (e.g., 16)"
-            keyboardType="numeric"
-            onChangeText={(text) => updateFontSize(Number(text))}
-          />
-        </View>
-
         {/* Export and Import */}
         <View style={styles.section}>
           <Text style={styles.label}>Data Management</Text>
@@ -202,7 +194,7 @@ export default function Settings() {
         </View>
 
         {/* Reset Settings */}
-        <TouchableOpacity style={styles.button} onPress={() => Alert.alert('todo implement')}>
+        <TouchableOpacity style={styles.button} onPress={() => resetSettings()}>
           <Text style={styles.buttonText}>Reset to Default Settings</Text>
         </TouchableOpacity>
 

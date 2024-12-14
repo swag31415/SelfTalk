@@ -32,7 +32,7 @@ export default function ColorPickerThing({ value, setValue }: { value: string, s
   return (
     <>
       <Pressable style={[styles.colorPicker.openButton, { backgroundColor: value }]} onPress={() => setShowModal(true)}>
-        <Text style={styles.colorPicker.centeredText}>{'#fff'}</Text>
+        <Text style={styles.colorPicker.centeredText}>{value}</Text>
       </Pressable>
 
       <Modal onRequestClose={() => setShowModal(false)} visible={showModal} animationType='slide'>

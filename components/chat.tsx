@@ -1,8 +1,8 @@
 import React, { useState, ReactNode } from 'react';
-import { View, Text, TouchableWithoutFeedback, NativeTouchEvent, GestureResponderEvent, ColorValue } from 'react-native';
+import { View, Text, TouchableWithoutFeedback, NativeTouchEvent, GestureResponderEvent, ColorValue, TextStyle } from 'react-native';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
+import { Chat, MessageType, Theme, ThemeFonts, darkTheme } from '@flyerhq/react-native-chat-ui';
 import { useDatabase } from './db';
 import { launchImageLibrary } from 'react-native-image-picker';
 
