@@ -6,7 +6,10 @@ import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
 import { useDatabase } from './db';
 import { launchImageLibrary } from 'react-native-image-picker';
 
+import { useStyles } from './styles'
+
 export default function () {
+  const { theme } = useStyles();
   const users = [
     { id: 'ae6c485e-87ea-4fca-a889-e2af0c043d46' },
     { id: '810bb732-9382-4b43-99fb-ea642c843cc3' },
@@ -122,7 +125,7 @@ export default function () {
           onSendPress={handleSendPress}
           onAttachmentPress={handleImageSelection}
           user={users[userIdx]}
-          theme={darkTheme}
+          theme={theme}
           emptyState={() => (
             <Text style={{ transform: [{ scaleX: -1 }], color: darkTheme.colors.primary }}>
               Who needs a therapist when you have your own number?

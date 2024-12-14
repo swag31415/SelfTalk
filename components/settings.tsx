@@ -2,18 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { Text, View, TouchableOpacity, TextInput, ScrollView, Alert } from "react-native";
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { darkTheme, defaultTheme, MessageType } from '@flyerhq/react-native-chat-ui';
-import { styles } from './styles';
+import { MessageType } from '@flyerhq/react-native-chat-ui';
+import { getStyles, useStyles, ThemeName } from './styles'
 import { useDatabase } from './db';
 import * as FileSystem from 'expo-file-system';
 import * as Clipboard from 'expo-clipboard';
 
 export default function Settings() {
   const { messages, addMessage, getSetting, setSetting } = useDatabase();
+  const { theme, updateTheme } = useStyles();
+  const styles = getStyles(theme);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   // States for settings and their defaults
-  const [theme, setTheme] = useState('dark');
+  const [themeName, setThemeName] = useState<ThemeName>('dark');
   const [userBubbleColor, setUserBubbleColor] = useState('#007AFF');
   const [otherBubbleColor, setOtherBubbleColor] = useState('#FF9500');
   const [font, setFont] = useState('System');
@@ -22,28 +24,23 @@ export default function Settings() {
 
   useEffect(() => {
     const loadSettings = async () => {
-      const _theme = (await getSetting('theme')) || theme;
+      const _themeName = (await getSetting('theme')) || themeName;
       const _userBubbleColor = (await getSetting('userBubbleColor')) || userBubbleColor;
       const _otherBubbleColor = (await getSetting('otherBubbleColor')) || otherBubbleColor;
       const _font = (await getSetting('font')) || font;
       const _fontSize = parseInt((await getSetting('fontSize')) || fontSize.toString(), 10);
 
-      if (_theme !== theme)
-        setTheme(_theme);
-      if (_userBubbleColor !== userBubbleColor)
-        setUserBubbleColor(userBubbleColor);
-      if (_otherBubbleColor !== otherBubbleColor)
-        setOtherBubbleColor(otherBubbleColor);
-      if (_font !== font)
-        setFont(font);
-      if (_fontSize !== fontSize)
-        setFontSize(fontSize);
+      setThemeName(_themeName as ThemeName);
+      setUserBubbleColor(_userBubbleColor);
+      setOtherBubbleColor(_otherBubbleColor);
+      setFont(_font);
+      setFontSize(_fontSize);
     };
 
     loadSettings();
   }, []);
 
-  useEffect(() => { setSetting('theme', theme) }, [theme]);
+  useEffect(() => { updateTheme(themeName) }, [themeName]);
   useEffect(() => { setSetting('userBubbleColor', userBubbleColor) }, [userBubbleColor]);
   useEffect(() => { setSetting('otherBubbleColor', otherBubbleColor) }, [otherBubbleColor]);
   useEffect(() => { setSetting('font', font) }, [font]);
@@ -89,9 +86,9 @@ export default function Settings() {
           <Text style={styles.label}>Theme</Text>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => setTheme(theme == 'dark' ? 'light' : 'dark')}
+            onPress={() => setThemeName(themeName == 'dark' ? 'light' : 'dark')}
           >
-            <Text style={styles.buttonText}>{theme == 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}</Text>
+            <Text style={styles.buttonText}>{themeName == 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}</Text>
           </TouchableOpacity>
         </View>
 

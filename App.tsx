@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MenuProvider } from 'react-native-popup-menu';
 import { DatabaseProviderWrapper } from './components/db';
 import { NavigationContainer } from '@react-navigation/native';
+import { StyleProvider } from './components/styles';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -33,11 +34,13 @@ function App() {
 export default function AppWrapper() {
   return (
     <DatabaseProviderWrapper>
-      <MenuProvider>
-        <NavigationContainer>
-          <App></App>
-        </NavigationContainer>
-      </MenuProvider>
+      <StyleProvider>
+        <MenuProvider>
+          <NavigationContainer>
+            <App></App>
+          </NavigationContainer>
+        </MenuProvider>
+      </StyleProvider>
     </DatabaseProviderWrapper>
   );
 }
