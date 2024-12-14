@@ -6,10 +6,10 @@ import { Chat, MessageType, darkTheme } from '@flyerhq/react-native-chat-ui';
 import { useDatabase } from './db';
 import { launchImageLibrary } from 'react-native-image-picker';
 
-import { useStyles } from './styles'
+import { useSettings } from './settings'
 
 export default function () {
-  const { theme } = useStyles();
+  const { theme } = useSettings();
   const users = [
     { id: 'ae6c485e-87ea-4fca-a889-e2af0c043d46' },
     { id: '810bb732-9382-4b43-99fb-ea642c843cc3' },

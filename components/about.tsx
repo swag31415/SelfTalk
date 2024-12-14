@@ -3,10 +3,11 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { getStyles, useStyles } from './styles'
+import { getStyles } from './styles'
+import { useSettings } from './settings'
 
 export default function AboutScreen() {
-  const { theme } = useStyles();
+  const { theme } = useSettings();
   const styles = getStyles(theme);
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 

@@ -3,11 +3,12 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { getStyles, useStyles } from './styles'
+import { useSettings } from './settings'
+import { getStyles } from './styles'
 
 export default function () {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-    const { theme } = useStyles();
+    const { theme } = useSettings();
     const styles = getStyles(theme);
     return (
         <View style={styles.container}>

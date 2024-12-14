@@ -7,10 +7,10 @@ import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useDatabase } from './db';
-import { useStyles } from './styles'
+import { useSettings } from './settings'
 
 export default function () {
-  const { theme } = useStyles();  
+  const { theme } = useSettings();  
   const { selectedMessagesCount, toggleSelectMessage, deleteSelected, getSelected } = useDatabase()
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 

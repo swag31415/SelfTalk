@@ -1,9 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
 import { TextStyle, ViewStyle } from "react-native";
-import { darkTheme, defaultTheme, Theme } from '@flyerhq/react-native-chat-ui';
-import { useDatabase } from './db'
-
-export type ThemeName = 'dark' | 'light';
+import { Theme } from '@flyerhq/react-native-chat-ui';
 
 export function getStyles(theme: Theme) {
     return {
@@ -80,44 +76,4 @@ export function getStyles(theme: Theme) {
             padding: 20,
         } as ViewStyle,
     }
-}
-
-interface StyleContextProps {
-    theme: Theme;
-    updateTheme: (themeName: ThemeName) => Promise<void>;
-}
-
-const StyleContext = createContext<StyleContextProps | undefined>(undefined);
-
-export function StyleProvider({ children }: { children: React.ReactNode }) {
-    const { setSetting, getSetting } = useDatabase();
-    const [theme, setTheme] = useState<Theme>(darkTheme);
-
-    async function updateTheme(themeName: ThemeName) {
-        await setSetting('theme', themeName);
-        setTheme(themeName === 'dark' ? darkTheme : defaultTheme);
-    }
-
-    useEffect(() => {
-        const loadTheme = async () => {
-            const _themeName = await getSetting('theme');
-            if (_themeName === 'dark' || _themeName === 'light')
-                setTheme(_themeName === 'dark' ? darkTheme : defaultTheme);
-        }
-        loadTheme();
-    }, []);
-
-    return (
-        <StyleContext.Provider value={{ theme, updateTheme }}>
-            {children}
-        </StyleContext.Provider>
-    );
-}
-
-export function useStyles() {
-    const context = useContext(StyleContext);
-    if (!context) {
-        throw new Error('useStyles must be used within a StyleProvider');
-    }
-    return context;
 }

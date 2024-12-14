@@ -1,54 +1,108 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Text, View, TouchableOpacity, TextInput, ScrollView, Alert } from "react-native";
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { MessageType } from '@flyerhq/react-native-chat-ui';
-import { getStyles, useStyles, ThemeName } from './styles'
+import { darkTheme, defaultTheme, MessageType, Theme } from '@flyerhq/react-native-chat-ui';
 import { useDatabase } from './db';
+import { getStyles } from './styles';
 import * as FileSystem from 'expo-file-system';
 import * as Clipboard from 'expo-clipboard';
 
-export default function Settings() {
-  const { messages, addMessage, getSetting, setSetting } = useDatabase();
-  const { theme, updateTheme } = useStyles();
-  const styles = getStyles(theme);
-  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+type ThemeName = 'dark' | 'light';
 
-  // States for settings and their defaults
-  const [themeName, setThemeName] = useState<ThemeName>('dark');
+interface SettingsContextProps {
+  theme: Theme;
+  updateTheme: (themeName: ThemeName) => void;
+  userBubbleColor: string;
+  updateUserBubbleColor: (color: string) => void;
+  otherBubbleColor: string;
+  updateOtherBubbleColor: (color: string) => void;
+  font: string;
+  updateFont: (fontName: string) => void;
+  fontSize: number;
+  updateFontSize: (fontSize: number) => void;
+}
+
+const SettingsContext = createContext<SettingsContextProps | undefined>(undefined);
+
+export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const { setSetting, getSetting } = useDatabase();
+
+  const [theme, setTheme] = useState<Theme>(darkTheme);
   const [userBubbleColor, setUserBubbleColor] = useState('#007AFF');
   const [otherBubbleColor, setOtherBubbleColor] = useState('#FF9500');
   const [font, setFont] = useState('System');
   const [fontSize, setFontSize] = useState(16);
-  const appVersion = '1.0.0'; // Example app version
 
   useEffect(() => {
     const loadSettings = async () => {
-      const _themeName = (await getSetting('theme')) || themeName;
-      const _userBubbleColor = (await getSetting('userBubbleColor')) || userBubbleColor;
-      const _otherBubbleColor = (await getSetting('otherBubbleColor')) || otherBubbleColor;
-      const _font = (await getSetting('font')) || font;
-      const _fontSize = parseInt((await getSetting('fontSize')) || fontSize.toString(), 10);
-
-      setThemeName(_themeName as ThemeName);
-      setUserBubbleColor(_userBubbleColor);
-      setOtherBubbleColor(_otherBubbleColor);
-      setFont(_font);
-      setFontSize(_fontSize);
-    };
+      const _theme = await getSetting('theme');
+      if (_theme === 'light' || _theme === 'dark') {
+        setTheme(_theme === 'dark' ? darkTheme : defaultTheme);
+      }
+      setUserBubbleColor((await getSetting('userBubbleColor')) ?? userBubbleColor);
+      setOtherBubbleColor((await getSetting('otherBubbleColor')) ?? otherBubbleColor);
+      setFont((await getSetting('font')) ?? font);
+      setFontSize(parseInt((await getSetting('fontSize')) ?? fontSize.toString()));
+    }
 
     loadSettings();
-  }, []);
+  }, [])
 
-  useEffect(() => { updateTheme(themeName) }, [themeName]);
-  useEffect(() => { setSetting('userBubbleColor', userBubbleColor) }, [userBubbleColor]);
-  useEffect(() => { setSetting('otherBubbleColor', otherBubbleColor) }, [otherBubbleColor]);
-  useEffect(() => { setSetting('font', font) }, [font]);
-  useEffect(() => { setSetting('fontSize', fontSize.toString()) }, [fontSize]);
+  function updateTheme(themeName: ThemeName) {
+    setTheme(themeName === 'dark' ? darkTheme : defaultTheme);
+    setSetting('theme', themeName);
+  }
+  function updateUserBubbleColor(color: string) {
+    setUserBubbleColor(color);
+    setSetting('userBubbleColor', color);
+  }
+  function updateOtherBubbleColor(color: string) {
+    setOtherBubbleColor(color);
+    setSetting('otherBubbleColor', color);
+  }
+  function updateFont(fontName: string) {
+    setFont(fontName);
+    setSetting('font', fontName);
+  }
+  function updateFontSize(size: number) {
+    setFontSize(size);
+    setSetting('fontSize', size.toString());
+  }
+
+  return (
+    <SettingsContext.Provider value={{
+      theme, updateTheme,
+      userBubbleColor, updateUserBubbleColor,
+      otherBubbleColor, updateOtherBubbleColor,
+      font, updateFont,
+      fontSize, updateFontSize,
+    }}>
+      {children}
+    </SettingsContext.Provider>
+  );
+}
+
+export function useSettings() {
+  const context = useContext(SettingsContext);
+  if (!context) {
+    throw new Error('useSettings must be used within a SettingsProvider');
+  }
+  return context;
+}
+
+export default function Settings() {
+  const { messages, addMessage } = useDatabase();
+  const {
+    theme, userBubbleColor, otherBubbleColor, font, fontSize,
+    updateTheme, updateUserBubbleColor, updateOtherBubbleColor, updateFont, updateFontSize,
+  } = useSettings();
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
+  const styles = getStyles(theme);
 
   const exportData = async (toClipboard = false) => {
     const getChatString = () => JSON.stringify(messages)
-    const data = JSON.stringify({ /* Example: Include your exported chat data */ });
     if (toClipboard) {
       await Clipboard.setStringAsync(getChatString())
     } else {
@@ -86,9 +140,9 @@ export default function Settings() {
           <Text style={styles.label}>Theme</Text>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => setThemeName(themeName == 'dark' ? 'light' : 'dark')}
+            onPress={() => updateTheme(theme == darkTheme ? 'light' : 'dark')}
           >
-            <Text style={styles.buttonText}>{themeName == 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}</Text>
+            <Text style={styles.buttonText}>{theme == darkTheme ? 'Switch to Light Theme' : 'Switch to Dark Theme'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -99,13 +153,13 @@ export default function Settings() {
             style={styles.input}
             value={userBubbleColor}
             placeholder="User Bubble Color (e.g., #007AFF)"
-            onChangeText={setUserBubbleColor}
+            onChangeText={updateUserBubbleColor}
           />
           <TextInput
             style={styles.input}
             value={otherBubbleColor}
             placeholder="Other Bubble Color (e.g., #FF9500)"
-            onChangeText={setOtherBubbleColor}
+            onChangeText={updateOtherBubbleColor}
           />
         </View>
 
@@ -116,14 +170,14 @@ export default function Settings() {
             style={styles.input}
             value={font}
             placeholder="Font Name (e.g., System, Arial)"
-            onChangeText={setFont}
+            onChangeText={updateFont}
           />
           <TextInput
             style={styles.input}
             value={fontSize.toString()}
             placeholder="Font Size (e.g., 16)"
             keyboardType="numeric"
-            onChangeText={(text) => setFontSize(Number(text))}
+            onChangeText={(text) => updateFontSize(Number(text))}
           />
         </View>
 
@@ -152,7 +206,7 @@ export default function Settings() {
         {/* App Info */}
         <View style={styles.section}>
           <Text style={styles.label}>App Info</Text>
-          <Text style={styles.subtitle}>Version: {appVersion}</Text>
+          <Text style={styles.subtitle}>Version: {'alpha'}</Text>
           <Text style={styles.subtitle}>Messages Sent: {messages.length}</Text>
         </View>
 
