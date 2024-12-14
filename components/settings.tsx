@@ -37,11 +37,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [fontSize, setFontSize] = useState(16);
 
   function resetSettings() {
-    setTheme(darkTheme);
-    setUserBubbleColor('#007AFF');
-    setOtherBubbleColor('#FF9500');
-    setFont('System');
-    setFontSize(16);
+    updateTheme('dark');
+    updateUserBubbleColor('#007AFF');
+    updateOtherBubbleColor('#FF9500');
+    updateFont('System');
+    updateFontSize(16);
   }
 
   useEffect(() => {
