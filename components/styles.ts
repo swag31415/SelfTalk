@@ -2,6 +2,8 @@ import { TextStyle, ViewStyle } from "react-native";
 import { Theme } from '@flyerhq/react-native-chat-ui';
 
 export function getStyles(theme: Theme) {
+    const fontFamily = 'monospace'; // Define the font to be used globally
+
     return {
         baseContainer: {
             flex: 1,
@@ -18,12 +20,14 @@ export function getStyles(theme: Theme) {
             fontWeight: 'bold',
             textAlign: 'center',
             marginBottom: 20,
+            fontFamily,
         } as TextStyle,
         subtitle: {
             fontSize: 16,
             color: theme.colors.inputText,
             textAlign: 'center',
             marginBottom: 20,
+            fontFamily,
         } as TextStyle,
         section: {
             marginBottom: 30,
@@ -33,6 +37,7 @@ export function getStyles(theme: Theme) {
             fontWeight: 'bold',
             color: theme.colors.primary,
             marginBottom: 10,
+            fontFamily,
         } as TextStyle,
         input: {
             borderWidth: 1,
@@ -44,7 +49,8 @@ export function getStyles(theme: Theme) {
             fontSize: 16,
             color: theme.colors.inputText,
             marginBottom: 15,
-        },
+            fontFamily,
+        } as TextStyle,
         button: {
             backgroundColor: theme.colors.primary,
             paddingVertical: 15,
@@ -61,6 +67,7 @@ export function getStyles(theme: Theme) {
             color: theme.colors.inputText,
             fontSize: 16,
             fontWeight: '600',
+            fontFamily,
         } as TextStyle,
         content: {
             fontSize: 16,
@@ -68,12 +75,118 @@ export function getStyles(theme: Theme) {
             lineHeight: 24,
             textAlign: 'left',
             marginBottom: 40,
+            fontFamily,
         } as TextStyle,
         italic: {
             fontStyle: 'italic',
+            fontFamily,
         } as TextStyle,
         padded: {
             padding: 20,
         } as ViewStyle,
+        colorPicker: {
+            centeredText: {
+                fontWeight: 'bold',
+                textAlign: 'center',
+                color: 'white',
+                fontFamily,
+            } as TextStyle,
+            container: {
+                flex: 1,
+                justifyContent: 'center',
+                alignContent: 'center',
+                backgroundColor: 'orange',
+            },
+            pickerContainer: {
+                alignSelf: 'center',
+                width: 300,
+                backgroundColor: '#fff',
+                padding: 20,
+                borderRadius: 20,
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 5,
+                },
+                shadowOpacity: 0.34,
+                shadowRadius: 6.27,
+                elevation: 10,
+            } as ViewStyle,
+            sliderTitle: {
+                color: '#000',
+                fontWeight: 'bold',
+                marginBottom: 5,
+                paddingHorizontal: 4,
+                fontFamily,
+            } as TextStyle,
+            sliderStyle: {
+                borderRadius: 20,
+                marginBottom: 20,
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+            },
+            previewTxtContainer: {
+                paddingTop: 20,
+                marginTop: 20,
+                borderTopWidth: 1,
+                borderColor: '#bebdbe',
+            },
+            swatchesContainer: {
+                paddingTop: 20,
+                marginTop: 20,
+                borderTopWidth: 1,
+                borderColor: '#bebdbe',
+                alignItems: 'center',
+                flexWrap: 'nowrap',
+                gap: 10,
+            },
+            swatchStyle: {
+                borderRadius: 20,
+                height: 30,
+                width: 30,
+                margin: 0,
+                marginBottom: 0,
+                marginHorizontal: 0,
+                marginVertical: 0,
+            },
+            openButton: {
+                borderRadius: 20,
+                paddingHorizontal: 40,
+                paddingVertical: 10,
+                marginVertical: 5,
+                backgroundColor: '#fff',
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+            },
+            closeButton: {
+                position: 'absolute',
+                bottom: 10,
+                borderRadius: 20,
+                paddingHorizontal: 40,
+                paddingVertical: 10,
+                alignSelf: 'center',
+                backgroundColor: '#fff',
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+            } as ViewStyle,
+        }
     }
 }
