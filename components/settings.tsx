@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { darkTheme, defaultTheme, MessageType, Theme } from '@flyerhq/react-native-chat-ui';
 import { useDatabase } from './db';
 import { getStyles } from './styles';
+import ColorPickerThing from './utils/color_picker';
 import * as FileSystem from 'expo-file-system';
 import * as Clipboard from 'expo-clipboard';
 
@@ -149,18 +150,8 @@ export default function Settings() {
         {/* Bubble Colors */}
         <View style={styles.section}>
           <Text style={styles.label}>Bubble Colors</Text>
-          <TextInput
-            style={styles.input}
-            value={userBubbleColor}
-            placeholder="User Bubble Color (e.g., #007AFF)"
-            onChangeText={updateUserBubbleColor}
-          />
-          <TextInput
-            style={styles.input}
-            value={otherBubbleColor}
-            placeholder="Other Bubble Color (e.g., #FF9500)"
-            onChangeText={updateOtherBubbleColor}
-          />
+          <ColorPickerThing value={userBubbleColor} setValue={updateUserBubbleColor}/>
+          <ColorPickerThing value={otherBubbleColor} setValue={updateOtherBubbleColor}/>
         </View>
 
         {/* Font and Font Size */}

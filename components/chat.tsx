@@ -9,14 +9,14 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { useSettings } from './settings'
 
 export default function () {
-  const { theme } = useSettings();
+  const { theme, userBubbleColor, otherBubbleColor } = useSettings();
   const users = [
     { id: 'ae6c485e-87ea-4fca-a889-e2af0c043d46' },
     { id: '810bb732-9382-4b43-99fb-ea642c843cc3' },
   ];
 
   const userColorMap = users.reduce((m, u, i) => {
-    const colors = darkTheme.colors.userAvatarNameColors;
+    const colors = [userBubbleColor, otherBubbleColor];
     m.set(u.id, colors[i % colors.length]);
     return m;
   }, new Map<string, ColorValue>());
