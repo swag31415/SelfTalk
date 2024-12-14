@@ -108,7 +108,6 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
       'SELECT value FROM settings WHERE name = ?;',
       [name]
     );
-    console.log(`got ${name} as ${result?.value ?? null}`);
     return result?.value ?? null;
   }
 
@@ -118,7 +117,6 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
        ON CONFLICT(name) DO UPDATE SET value = excluded.value;`,
       [name, value]
     );
-    console.log(`set ${name} as ${value}`);
   }
 
   // Initial fetch
