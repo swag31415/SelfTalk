@@ -1,8 +1,8 @@
-import { TextStyle, ViewStyle } from "react-native";
+import { TextStyle, ViewStyle } from 'react-native';
 import { Theme } from '@flyerhq/react-native-chat-ui';
 
 export function getStyles(theme: Theme) {
-    const fontFamily = 'monospace'; // Define the font to be used globally
+    const fontFamily = 'monospace'; // Define the font globally
 
     return {
         baseContainer: {
@@ -69,16 +69,34 @@ export function getStyles(theme: Theme) {
             fontWeight: '600',
             fontFamily,
         } as TextStyle,
-        content: {
-            fontSize: 16,
+        header: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: theme.colors.inputBackground,
+            paddingTop: 10,
+            paddingBottom: 8,
+        } as ViewStyle,
+        headerTitle: {
+            fontSize: 30,
+            fontFamily: 'Trebuchet MS', // Keeping this different font as per original code
             color: theme.colors.inputText,
-            lineHeight: 24,
-            textAlign: 'left',
-            marginBottom: 40,
-            fontFamily,
+            marginTop: -3.1,
+            paddingLeft: 10,
         } as TextStyle,
-        italic: {
-            fontStyle: 'italic',
+        iconStyle: {
+            paddingLeft: 10,
+            paddingRight: 10,
+        } as ViewStyle,
+        menuOptionsContainer: {
+            backgroundColor: theme.colors.secondary,
+            borderRadius: 20,
+            borderColor: theme.colors.background,
+            borderWidth: 1.5,
+        } as ViewStyle,
+        menuOptionText: {
+            color: theme.colors.inputText,
+            padding: 10,
             fontFamily,
         } as TextStyle,
         padded: {
@@ -151,9 +169,6 @@ export function getStyles(theme: Theme) {
                 height: 30,
                 width: 30,
                 margin: 0,
-                marginBottom: 0,
-                marginHorizontal: 0,
-                marginVertical: 0,
             },
             openButton: {
                 borderRadius: 20,
@@ -187,6 +202,6 @@ export function getStyles(theme: Theme) {
                 shadowRadius: 3.84,
                 elevation: 5,
             } as ViewStyle,
-        }
-    }
+        },
+    };
 }
