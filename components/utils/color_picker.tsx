@@ -14,7 +14,7 @@ import type { returnedResults } from 'reanimated-color-picker';
 import { useSettings } from '../settings';
 import { getStyles } from '../styles';
 
-export default function ColorPickerThing({ value, setValue }: { value: string, setValue: (color: string) => void } ) {
+export default function ColorPickerThing({ value, setValue }: { value: string, setValue: (color: string) => void }) {
   const [showModal, setShowModal] = useState(false);
 
   const selectedColor = useSharedValue(value);

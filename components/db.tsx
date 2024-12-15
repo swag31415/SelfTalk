@@ -48,16 +48,26 @@ interface DatabaseContextProps {
   // Settings management
   getSetting: (name: string) => Promise<string | null>;
   setSetting: (name: string, value: string) => Promise<void>;
+
+  // UserIDX
+  userIdx: number;
+  switchUsers: () => void;
 }
 
 // Create the context
 const DatabaseContext = createContext<DatabaseContextProps | undefined>(undefined);
+
+export const Users = [
+  { id: 'ae6c485e-87ea-4fca-a889-e2af0c043d46' },
+  { id: '810bb732-9382-4b43-99fb-ea642c843cc3' },
+];
 
 // Provider component
 function DatabaseProvider({ children }: { children: React.ReactNode }) {
   const db = useSQLiteContext();
   const [messages, setMessages] = useState<MessageType.Any[]>([]);
   const [selectedMessagesCount, setSelectedMessagesCount] = useState<number>(0);
+  const [userIdx, setUserIdx] = useState<number>(0);
 
   async function updateMessages() {
     const msgs = await db.getAllAsync<DatabaseMessage>('SELECT * FROM messages ORDER BY createdAt DESC;');
@@ -119,6 +129,10 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
+  function switchUsers() {
+    setUserIdx((userIdx + 1) % Users.length);
+  }
+
   // Initial fetch
   useEffect(() => {
     updateMessages();
@@ -134,7 +148,9 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
       deleteSelected,
       getSelected,
       getSetting,
-      setSetting
+      setSetting,
+      userIdx,
+      switchUsers,
     }}>
       {children}
     </DatabaseContext.Provider>

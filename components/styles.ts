@@ -102,6 +102,16 @@ export function getStyles(theme: Theme) {
         padded: {
             padding: 20,
         } as ViewStyle,
+        content: {
+            fontSize: 16,
+            color: theme.colors.inputText,
+            lineHeight: 24,
+            textAlign: 'left',
+            marginBottom: 40,
+        } as TextStyle,
+        italic: {
+            fontStyle: 'italic',
+        } as TextStyle,
         colorPicker: {
             centeredText: {
                 fontWeight: 'bold',

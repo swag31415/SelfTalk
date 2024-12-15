@@ -12,7 +12,7 @@ import { getStyles } from './styles';
 
 export default function () {
   const { theme } = useSettings();
-  const { selectedMessagesCount, toggleSelectMessage, deleteSelected, getSelected } = useDatabase();
+  const { selectedMessagesCount, toggleSelectMessage, deleteSelected, getSelected, switchUsers } = useDatabase();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const styles = getStyles(theme);
 
@@ -48,6 +48,13 @@ export default function () {
             onPress={deleteSelected}
           />
         )}
+        <Icon
+          name="arrow-switch"
+          size={28}
+          color={theme.colors.inputText}
+          style={styles.iconStyle}
+          onPress={switchUsers}
+        />
         <Menu>
           <MenuTrigger>
             <Icon

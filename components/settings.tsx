@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Text, View, TouchableOpacity, TextInput, ScrollView, Alert } from "react-native";
+import { Text, View, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { darkTheme, defaultTheme, MessageType, Theme } from '@flyerhq/react-native-chat-ui';
@@ -160,8 +160,8 @@ export default function Settings() {
         {/* Bubble Colors */}
         <View style={styles.section}>
           <Text style={styles.label}>Bubble Colors</Text>
-          <ColorPickerThing value={userBubbleColor} setValue={updateUserBubbleColor}/>
-          <ColorPickerThing value={otherBubbleColor} setValue={updateOtherBubbleColor}/>
+          <ColorPickerThing value={userBubbleColor} setValue={updateUserBubbleColor} />
+          <ColorPickerThing value={otherBubbleColor} setValue={updateOtherBubbleColor} />
         </View>
 
         {/* Export and Import */}
