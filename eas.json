@@ -9,10 +9,6 @@
                 "buildType": "apk"
             }
         },
-        "production": {
-            "android": {
-                "gradleCommand": ":app:assembleRelease"
-            }
-        }
+        "production": {}
     }
 }
