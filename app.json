@@ -2,7 +2,7 @@
   "expo": {
     "name": "selftalk",
     "slug": "selftalk",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,7 +17,13 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.swag31415.selftalk"
+      "bundleIdentifier": "com.swag31415.selftalk",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "We need access to your photo library to allow you to upload images and customize your profile."
+      },
+      "entitlements": {
+        "aps-environment": "production"
+      }
     },
     "android": {
       "adaptiveIcon": {
