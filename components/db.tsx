@@ -62,8 +62,9 @@ interface DatabaseContextProps {
 const DatabaseContext = createContext<DatabaseContextProps | undefined>(undefined);
 
 export const Users = [
-  { id: 'ae6c485e-87ea-4fca-a889-e2af0c043d46' },
-  { id: '810bb732-9382-4b43-99fb-ea642c843cc3' },
+  { id: 'user1' },
+  { id: 'user2' },
+  { id: 'ai' },
 ];
 
 // Provider component
@@ -98,9 +99,14 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function generateMessage() {
-    const HISTORY_SIZE = 5;
+    const SYSTEM_MESSAGES = [{role: 'system', content: `What follows is a chat with multiple users. Each message starts with the name of the user followed by that user's message. Refer to the users and answer their questions.`}];
+    const HISTORY_SIZE = 20;
     function format_message_for_AI(msg: MessageType.Text): AIMessageType {
-      return {role: 'user', content: msg.text};
+      if (msg.author.id === 'ai') {
+        return {role: 'assistant', content: msg.text};
+      } else {
+        return {role: 'user', content: `${msg.author.id}: ${msg.text}`};
+      }
     }
     const lastTextMessages = []
     for (const msg of messages) {
@@ -110,13 +116,14 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
       }
     }
     if (lastTextMessages.length === 0) return;
+    lastTextMessages.reverse();
     console.log('Last text messages:', lastTextMessages);
     const response = await fetch('https://iskcon-llm-986406911765.us-central1.run.app/query', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         question: lastTextMessages[lastTextMessages.length - 1].content,
-        messages: lastTextMessages.slice(0, -1),
+        messages: [...SYSTEM_MESSAGES, ...lastTextMessages.slice(0, -1)],
       }),
     });
 
@@ -134,7 +141,7 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
     }
 
     const textMessage: MessageType.Text = {
-      author: Users[userIdx],
+      author: Users[2], // the user is AI, TODO make a better system for this
       createdAt: Date.now(),
       id: uuidv4(),
       text: data.response,
@@ -180,7 +187,7 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
   }
 
   function switchUsers() {
-    setUserIdx((userIdx + 1) % Users.length);
+    setUserIdx((userIdx + 1) % 2); // We use 2 here because the last user is AI
   }
 
   // Initial fetch

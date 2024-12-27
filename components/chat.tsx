@@ -10,9 +10,10 @@ import { useSettings } from './settings'
 
 export default function () {
   const { theme, userBubbleColor, otherBubbleColor } = useSettings();
+  const AI_BUBBLE_COLOR = '#6369D1';
 
   const userColorMap = Users.reduce((m, u, i) => {
-    const colors = [userBubbleColor, otherBubbleColor];
+    const colors = [userBubbleColor, otherBubbleColor, AI_BUBBLE_COLOR];
     m.set(u.id, colors[i % colors.length]);
     return m;
   }, new Map<string, ColorValue>());
