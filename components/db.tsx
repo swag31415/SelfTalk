@@ -1,6 +1,8 @@
 import { MessageType } from '@flyerhq/react-native-chat-ui';
 import { SQLiteDatabase, SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { Alert } from 'react-native';
+import { v4 as uuidv4 } from 'uuid';
 
 interface DatabaseMessage {
   id: string;
@@ -10,6 +12,7 @@ interface DatabaseMessage {
   selected: number;
   text: string | null;
 }
+type AIMessageType = {role: string, content: string}
 
 const initializeDatabase = async (db: SQLiteDatabase) => {
   await db.withTransactionAsync(async () => {
@@ -42,6 +45,7 @@ interface DatabaseContextProps {
   updateMessages: () => Promise<void>;
   toggleSelectMessage: (message: MessageType.Any) => Promise<void>;
   addMessage: (message: MessageType.Any, selected?: boolean) => Promise<void>;
+  generateMessage: () => Promise<void>;
   deleteSelected: () => Promise<void>;
   getSelected: () => Promise<MessageType.Any[]>;
 
@@ -91,6 +95,52 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
       ]
     );
     await updateMessages();
+  }
+
+  async function generateMessage() {
+    const HISTORY_SIZE = 5;
+    function format_message_for_AI(msg: MessageType.Text): AIMessageType {
+      return {role: 'user', content: msg.text};
+    }
+    const lastTextMessages = []
+    for (const msg of messages) {
+      if (msg.type === 'text') {
+        lastTextMessages.push(format_message_for_AI(msg));
+        if (lastTextMessages.length >= HISTORY_SIZE + 1) break;
+      }
+    }
+    if (lastTextMessages.length === 0) return;
+    console.log('Last text messages:', lastTextMessages);
+    const response = await fetch('https://iskcon-llm-986406911765.us-central1.run.app/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: lastTextMessages[lastTextMessages.length - 1].content,
+        messages: lastTextMessages.slice(0, -1),
+      }),
+    });
+
+    if (!response.ok) {
+      Alert.alert('Error', 'Failed to generate message');
+      console.log(response);
+      return;
+    }
+
+    const data = await response.json();
+    if (!data || !data.response) {
+      Alert.alert('Error', 'Failed to generate message');
+      console.log(data);
+      return;
+    }
+
+    const textMessage: MessageType.Text = {
+      author: Users[userIdx],
+      createdAt: Date.now(),
+      id: uuidv4(),
+      text: data.response,
+      type: 'text',
+    };
+    await addMessage(textMessage);
   }
 
   async function toggleSelectMessage(message: MessageType.Any) {
@@ -145,6 +195,7 @@ function DatabaseProvider({ children }: { children: React.ReactNode }) {
       updateMessages,
       toggleSelectMessage,
       addMessage,
+      generateMessage,
       deleteSelected,
       getSelected,
       getSetting,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/Octicons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import { ParamListBase, useNavigation } from '@react-navigation/native';
@@ -12,7 +12,7 @@ import { getStyles } from './styles';
 
 export default function () {
   const { theme } = useSettings();
-  const { selectedMessagesCount, toggleSelectMessage, deleteSelected, getSelected, switchUsers } = useDatabase();
+  const { selectedMessagesCount, toggleSelectMessage, deleteSelected, getSelected, switchUsers, generateMessage } = useDatabase();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
   const styles = getStyles(theme);
 
@@ -49,7 +49,14 @@ export default function () {
           />
         )}
         <Icon
-          name="arrow-switch"
+          name="sparkles"
+          size={28}
+          color={theme.colors.inputText}
+          style={styles.iconStyle}
+          onPress={generateMessage}
+        />
+        <Icon
+          name="swap-horizontal"
           size={28}
           color={theme.colors.inputText}
           style={styles.iconStyle}
@@ -58,7 +65,7 @@ export default function () {
         <Menu>
           <MenuTrigger>
             <Icon
-              name="kebab-horizontal"
+              name="menu"
               size={28}
               color={theme.colors.inputText}
               style={styles.iconStyle}
