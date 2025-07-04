@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "EAS Build iOS (local)",
+            "type": "shell",
+            "command": "eas build --platform ios --local",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "EAS Build Android (local)",
+            "type": "shell",
+            "command": "eas build --platform android --local",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "EAS Build Android Play Store (local, .aab)",
+            "type": "shell",
+            "command": "eas build --platform android --profile production --local --output=build.aab",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Update Dependencies",
+            "type": "shell",
+            "command": "npm install ; npx expo install --check",
+            "group": "build",
+            "problemMatcher": []
+        },
+    ]
+} 
