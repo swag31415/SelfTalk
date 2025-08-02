@@ -11,14 +11,14 @@
         {
             "label": "EAS Build Android (local)",
             "type": "shell",
-            "command": "eas build --platform android --local",
+            "command": "eas build -p android --profile preview --local",
             "group": "build",
             "problemMatcher": []
         },
         {
             "label": "EAS Build Android Play Store (local, .aab)",
             "type": "shell",
-            "command": "eas build --platform android --profile production --local --output=build.aab",
+            "command": "eas build -p android --profile production --local",
             "group": "build",
             "problemMatcher": []
         },
