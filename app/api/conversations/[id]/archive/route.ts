@@ -1,0 +1,2 @@
+import { eq } from "drizzle-orm"; import { db } from "@/lib/db"; import { conversations } from "@/lib/db/schema"; import { ownedConversation } from "@/lib/api";
+export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) { const id = (await params).id; const item = await ownedConversation(id); if (!item) return Response.json({ error: "Not found" }, { status: 404 }); await db.update(conversations).set({ archivedAt: new Date() }).where(eq(conversations.id, id)); return Response.json({ ...item, archivedAt: new Date() }); }
