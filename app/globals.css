@@ -175,9 +175,9 @@ button {
   font-weight: 800;
 }
 .search {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 7px;
   margin: 15px 0;
   border: 1px solid #3b435a;
   border-radius: 9px;
@@ -185,7 +185,11 @@ button {
   color: #9ca5ba;
   background: #202536;
 }
-.search svg { flex: 0 0 auto; }
+.search svg {
+  position: absolute;
+  left: 9px;
+  pointer-events: none;
+}
 .chat-search {
   width: min(280px, 42vw);
   margin: 0;
@@ -193,6 +197,8 @@ button {
 .search input {
   min-width: 0;
   width: 100%;
+  box-sizing: border-box;
+  padding-left: 22px;
   border: 0;
   outline: 0;
   background: transparent;
