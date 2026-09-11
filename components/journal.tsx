@@ -304,10 +304,7 @@ export function Journal() {
                   {message.body}
                 </div>
                 <small>
-                  {new Intl.DateTimeFormat(undefined, {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  }).format(new Date(message.createdAt))}
+                  {Number.isNaN(new Date(message.createdAt).getTime()) ? "Just now" : new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(new Date(message.createdAt))}
                 </small>
               </article>
             ))}
