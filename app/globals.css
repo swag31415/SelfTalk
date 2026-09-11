@@ -86,7 +86,7 @@ button {
 .brand {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 0;
   font-size: 23px;
   font-weight: 850;
   letter-spacing: -1.7px;
@@ -95,6 +95,7 @@ button {
   color: #a39bea;
 }
 .brand small {
+  margin-left: 10px;
   color: var(--muted);
   font-size: 12px;
   font-weight: 400;
@@ -151,6 +152,10 @@ button {
   color: #9ca5ba;
   background: #202536;
 }
+.chat-search {
+  width: min(280px, 42vw);
+  margin: 0;
+}
 .search input {
   width: 100%;
   border: 0;
@@ -178,9 +183,41 @@ button {
   background: transparent;
 }
 .thread:hover,
-.thread.selected {
+.thread-row.selected,
+.thread-row:hover {
   background: #2a2a47;
 }
+.thread-row {
+  position: relative;
+  border-radius: 9px;
+  margin: 3px 0;
+}
+.thread-row .thread { margin: 0; }
+.thread-actions {
+  display: none;
+  position: absolute;
+  right: 6px;
+  top: 7px;
+  gap: 2px;
+  background: #2a2a47;
+}
+.thread-row:hover .thread-actions,
+.thread-row.selected .thread-actions { display: flex; }
+.thread-actions button,
+.message-actions button,
+.replying-to button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  padding: 4px;
+  background: transparent;
+  color: #d9ddec;
+}
+.thread-actions button:hover,
+.message-actions button:hover,
+.replying-to button:hover { background: #414861; }
+.thread-actions button:disabled { opacity: .3; cursor: default; }
 .thread b,
 .thread small {
   display: block;
@@ -217,7 +254,7 @@ button {
   background: #171a28;
 }
 .persona {
-  text-align: center;
+  text-align: left;
 }
 .persona b {
   display: block;
@@ -305,6 +342,18 @@ button {
   color: #e7e4fb;
   opacity: 0.6;
 }
+.message-actions {
+  position: absolute;
+  display: flex;
+  gap: 1px;
+  right: 7px;
+  top: 7px;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+.bubble:hover .message-actions,
+.message:focus-within .message-actions { opacity: 1; }
+.reaction-list { display: flex; gap: 4px; margin-top: 4px; }
 .reply {
   border-left: 2px solid #e0dcff;
   padding-left: 7px;
@@ -357,13 +406,36 @@ button {
   right: 0;
   bottom: 42px;
   z-index: 2;
-  display: flex;
-  gap: 3px;
-  padding: 5px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: #282d40;
   box-shadow: 0 8px 20px #0008;
+}
+.emoji-options .EmojiPickerReact,
+.reaction-picker .EmojiPickerReact { --epr-bg-color: #282d40; --epr-category-label-bg-color: #282d40; --epr-text-color: #edf0fa; --epr-search-input-bg-color: #202536; --epr-search-input-text-color: #edf0fa; }
+.reaction-picker {
+  position: fixed;
+  z-index: 3;
+  right: 25px;
+  bottom: 80px;
+  box-shadow: 0 8px 20px #0008;
+}
+.replying-to {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: -35px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+  background: #202536;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .emoji-options button {
   border: 0;
@@ -531,6 +603,9 @@ button {
     height: 64px;
     padding: 0 13px;
   }
+  .chat-search { width: min(210px, 55vw); }
+  .thread-actions { display: flex; }
+  .reaction-picker { right: 12px; bottom: 70px; }
   .mobile-back {
     display: block;
     border: 0;
