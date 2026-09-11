@@ -31,6 +31,13 @@
 .settings-account img, .settings-account > span { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: var(--accent); color: #11131e; display: grid; place-items: center; font-weight: 800; }
 .settings-account b, .settings-account small { display: block; }
 .settings-account small { margin-top: 3px; color: var(--muted); }
+.data-controls { margin: 25px 0; padding-top: 21px; border-top: 1px solid var(--line); }
+.data-controls h2 { margin: 0; font-size: 17px; }
+.data-controls p { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.settings-action { width: 100%; display: flex; align-items: center; gap: 9px; margin-top: 9px; padding: 11px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); background: var(--panel-2); text-align: left; }
+.settings-action:hover { border-color: var(--accent); }
+.settings-action:disabled { opacity: .6; cursor: default; }
+.settings-action.danger { color: #ffc0ca; border-color: #77414d; }
 .account-indicator {
   width: 32px;
   height: 32px;
@@ -178,11 +185,13 @@ button {
   color: #9ca5ba;
   background: #202536;
 }
+.search svg { flex: 0 0 auto; }
 .chat-search {
   width: min(280px, 42vw);
   margin: 0;
 }
 .search input {
+  min-width: 0;
   width: 100%;
   border: 0;
   outline: 0;
@@ -434,9 +443,6 @@ button {
 .emoji-picker {
   position: relative;
 }
-.quick-emojis { display: flex; gap: 2px; }
-.quick-emojis button { border: 0; border-radius: 5px; padding: 3px; background: transparent; font-size: 15px; }
-.quick-emojis button:hover { background: var(--panel-2); }
 .emoji-options {
   position: absolute;
   right: 0;
@@ -557,11 +563,11 @@ button {
   color: #edf0fa;
   text-align: left;
 }
-.side-row span {
-  float: right;
-  color: #a39bea;
-  font-size: 12px;
-}
+.side-row { display: flex; align-items: center; gap: 6px; padding: 4px; }
+.side-select { flex: 1; border: 0; padding: 7px; color: #edf0fa; background: transparent; text-align: left; }
+.side-delete { display: grid; place-items: center; border: 0; border-radius: 7px; padding: 7px; color: #f1b8c1; background: transparent; }
+.side-delete:hover { background: #4a2933; }
+.side-delete:disabled { opacity: .35; cursor: default; }
 .add-side {
   display: flex;
   gap: 7px;
@@ -657,7 +663,6 @@ button {
   .composer {
     padding: 10px;
   }
-  .quick-emojis { display: none; }
   .side-manager {
     display: none;
   }
