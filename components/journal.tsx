@@ -1,18 +1,409 @@
 "use client";
-import { ArrowLeftRight, CirclePlus, FileUp, LogIn, Plus, Search, Send, Settings, Smile, X } from "lucide-react";
+import {
+  ArrowLeftRight,
+  CirclePlus,
+  FileUp,
+  LogIn,
+  Plus,
+  Search,
+  Send,
+  Settings,
+  Smile,
+  X,
+} from "lucide-react";
 import { signIn } from "next-auth/react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { InstallButton } from "./install-button";
-type Side={id:string;name:string;color:string;position:number}; type Conversation={id:string;title:string}; type Message={id:string;authorSideId:string;body:string;createdAt:string};
-const colors=["#8179c4","#6fa281","#cf9951","#d36e83","#668bb7","#4fa89c"];
-async function api<T>(url:string,options?:RequestInit){const response=await fetch(url,{credentials:"same-origin",...options,headers:{"Content-Type":"application/json",...options?.headers}});if(!response.ok)throw new Error((await response.json().catch(()=>({}))).error||"Request failed");return response.json() as Promise<T>}
-export function Journal(){
- const[sides,setSides]=useState<Side[]>([]),[conversations,setConversations]=useState<Conversation[]>([]),[conversationId,setConversationId]=useState<string|null>(null),[messages,setMessages]=useState<Message[]>([]),[sideIndex,setSideIndex]=useState(0),[draft,setDraft]=useState(""),[query,setQuery]=useState(""),[sidesOpen,setSidesOpen]=useState(false),[emojiOpen,setEmojiOpen]=useState(false),[authRequired,setAuthRequired]=useState(false),[notice,setNotice]=useState(""); const current=sides[sideIndex],shown=useMemo(()=>messages.filter(message=>message.body.toLowerCase().includes(query.toLowerCase())),[messages,query]); const unauthorized=(error:unknown)=>error instanceof Error&&error.message==="Unauthorized"; const say=(message:string)=>{setNotice(message);window.setTimeout(()=>setNotice(""),2800)};
- const load=async()=>{try{let loadedSides=await api<Side[]>("/api/sides");if(!loadedSides.length)loadedSides=await Promise.all(["Violet","Moss","Amber"].map((name,position)=>api<Side>("/api/sides",{method:"POST",body:JSON.stringify({name,color:colors[position],position})})));const loadedConversations=await api<Conversation[]>("/api/conversations");setSides(loadedSides);setConversations(loadedConversations);setConversationId(old=>old||loadedConversations[0]?.id||null);setAuthRequired(false)}catch(error){if(unauthorized(error))setAuthRequired(true);else say("Couldn’t load your private journal.")}};
- useEffect(()=>{void load()},[]);useEffect(()=>{if(!conversationId)return;void api<Message[]>(`/api/messages?conversationId=${conversationId}`).then(setMessages).catch(error=>{if(unauthorized(error))setAuthRequired(true)})},[conversationId]);
- async function create(){try{const item=await api<Conversation>("/api/conversations",{method:"POST",body:JSON.stringify({title:"Untitled conversation"})});setConversations(all=>[item,...all]);setConversationId(item.id)}catch(error){if(unauthorized(error))setAuthRequired(true);else say("Couldn’t create conversation.")}}
- async function addSide(){const name=window.prompt("Name this side?");if(!name?.trim())return;try{const item=await api<Side>("/api/sides",{method:"POST",body:JSON.stringify({name,color:colors[sides.length%colors.length],position:sides.length})});setSides(all=>[...all,item]);setSideIndex(sides.length)}catch(error){if(unauthorized(error))setAuthRequired(true);else say("Couldn’t add side.")}}
- async function send(event:FormEvent){event.preventDefault();if(!draft.trim()||!conversationId||!current)return;try{const item=await api<Message>("/api/messages",{method:"POST",body:JSON.stringify({conversationId,authorSideId:current.id,body:draft})});setMessages(all=>[...all,item]);setDraft("")}catch(error){if(unauthorized(error))setAuthRequired(true);else say("Couldn’t save message.")}}
- if(authRequired)return <main className="shell auth-gate"><section className="auth-card"><div className="brand">Self<span>Talk</span></div><p>go ahead, talk to yourself</p><small>Your journal is private. Sign in with the Google account that owns it.</small><button className="new-thread" onClick={()=>void signIn("google",{callbackUrl:window.location.origin})}><LogIn size={18}/> Sign in with Google</button></section></main>;
- return <main className="shell"><header className="appbar"><div className="brand">Self<span>Talk</span><small>talk to yourself</small></div><div className="account"><InstallButton/><button className="icon-button" aria-label="Settings" onClick={()=>say("Settings are coming soon.")}><Settings size={18}/></button></div></header><div className="app-layout"><aside className="library"><button className="new-thread" onClick={()=>void create()}><CirclePlus size={18}/> New conversation</button><label className="search"><Search size={15}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search messages"/></label><p className="library-label">Your conversations</p>{conversations.map(item=><button className={`thread ${item.id===conversationId?"selected":""}`} key={item.id} onClick={()=>setConversationId(item.id)}><b>{item.title}</b><small>Private conversation</small></button>)}</aside><section className="chat"><header className="chat-header"><div className="persona"><b>{current&&<i style={{background:current.color}}/>}{current?.name||"Your side"}</b><small>current side</small></div><button className="icon-button" aria-label="Search messages" onClick={()=>document.querySelector<HTMLInputElement>(".search input")?.focus()}><Search size={18}/></button></header><div className="messages">{shown.map(message=><article key={message.id} className={`message ${message.authorSideId===current?.id?"right":"left"}`}><div className="bubble" style={{background:sides.find(side=>side.id===message.authorSideId)?.color}}>{message.body}</div><small>{new Intl.DateTimeFormat(undefined,{hour:"numeric",minute:"2-digit"}).format(new Date(message.createdAt))}</small></article>)}{!shown.length&&<p className="empty">go ahead, talk to yourself</p>}</div><form className="composer" onSubmit={send}><input value={draft} onChange={event=>setDraft(event.target.value)} placeholder="go ahead, talk to yourself" aria-label="Message"/><button type="button" className="icon-button" title="Attachments are not enabled" onClick={()=>say("Attachments aren’t part of this journal.")}><FileUp size={20}/></button><span className="emoji-picker"><button type="button" className="icon-button" aria-expanded={emojiOpen} onClick={()=>setEmojiOpen(open=>!open)}><Smile size={20}/></button>{emojiOpen&&<span className="emoji-options">{["😊","❤️","😂","🥹","✨","💭"].map(emoji=><button type="button" key={emoji} onClick={()=>setDraft(text=>`${text}${emoji}`)}>{emoji}</button>)}</span>}</span><button type="button" className="cycler" onClick={()=>setSideIndex(index=>sides.length?(index+1)%sides.length:0)} aria-label="Switch to next side"><ArrowLeftRight size={18}/></button><button className="send" aria-label="Send message"><Send size={18}/></button></form></section></div><button className="side-manager" onClick={()=>setSidesOpen(true)}>Sides · {sides.map(side=>side.name).join(" / ")}</button>{notice&&<p className="toast">{notice}</p>}{sidesOpen&&<div className="modal-backdrop" onClick={()=>setSidesOpen(false)}><section className="side-modal" onClick={event=>event.stopPropagation()}><button className="close" onClick={()=>setSidesOpen(false)}><X/></button><h2>Your sides</h2>{sides.map((side,index)=><button key={side.id} className="side-row" onClick={()=>{setSideIndex(index);setSidesOpen(false)}}><i style={{background:side.color}}/>{side.name}</button>)}<button className="add-side" onClick={()=>void addSide()}><Plus size={16}/> Add another side</button></section></div>}</main>;
+type Side = { id: string; name: string; color: string; position: number };
+type Conversation = { id: string; title: string };
+type Message = {
+  id: string;
+  authorSideId: string;
+  body: string;
+  createdAt: string;
+};
+type Account = {
+  user?: { name?: string | null; email?: string | null; image?: string | null };
+};
+const colors = [
+  "#8179c4",
+  "#6fa281",
+  "#cf9951",
+  "#d36e83",
+  "#668bb7",
+  "#4fa89c",
+];
+async function api<T>(url: string, options?: RequestInit) {
+  const response = await fetch(url, {
+    credentials: "same-origin",
+    ...options,
+    headers: { "Content-Type": "application/json", ...options?.headers },
+  });
+  if (!response.ok)
+    throw new Error(
+      (await response.json().catch(() => ({}))).error || "Request failed",
+    );
+  return response.json() as Promise<T>;
+}
+export function Journal() {
+  const [sides, setSides] = useState<Side[]>([]),
+    [conversations, setConversations] = useState<Conversation[]>([]),
+    [conversationId, setConversationId] = useState<string | null>(null),
+    [messages, setMessages] = useState<Message[]>([]),
+    [sideIndex, setSideIndex] = useState(0),
+    [draft, setDraft] = useState(""),
+    [query, setQuery] = useState(""),
+    [sidesOpen, setSidesOpen] = useState(false),
+    [emojiOpen, setEmojiOpen] = useState(false),
+    [authRequired, setAuthRequired] = useState(false),
+    [signingIn, setSigningIn] = useState(false),
+    [account, setAccount] = useState<Account | null>(null),
+    [notice, setNotice] = useState("");
+  const current = sides[sideIndex],
+    shown = useMemo(
+      () =>
+        messages.filter((message) =>
+          message.body.toLowerCase().includes(query.toLowerCase()),
+        ),
+      [messages, query],
+    );
+  const unauthorized = (error: unknown) =>
+    error instanceof Error && error.message === "Unauthorized";
+  const say = (message: string) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(""), 2800);
+  };
+  const load = async () => {
+    try {
+      const session = await api<Account | null>("/api/auth/session");
+      if (!session?.user) {
+        setAuthRequired(true);
+        return;
+      }
+      setAccount(session);
+      let loadedSides = await api<Side[]>("/api/sides");
+      if (!loadedSides.length)
+        loadedSides = await Promise.all(
+          ["Violet", "Moss", "Amber"].map((name, position) =>
+            api<Side>("/api/sides", {
+              method: "POST",
+              body: JSON.stringify({ name, color: colors[position], position }),
+            }),
+          ),
+        );
+      let loadedConversations = await api<Conversation[]>("/api/conversations");
+      if (!loadedConversations.length) {
+        const firstConversation = await api<Conversation>(
+          "/api/conversations",
+          {
+            method: "POST",
+            body: JSON.stringify({ title: "My first conversation" }),
+          },
+        );
+        loadedConversations = [firstConversation];
+      }
+      setSides(loadedSides);
+      setConversations(loadedConversations);
+      setConversationId((old) => old || loadedConversations[0].id);
+      setAuthRequired(false);
+    } catch (error) {
+      if (unauthorized(error)) setAuthRequired(true);
+      else say("Couldn’t load your private journal.");
+    }
+  };
+  useEffect(() => {
+    void load();
+  }, []);
+  useEffect(() => {
+    if (!conversationId) return;
+    void api<Message[]>(`/api/messages?conversationId=${conversationId}`)
+      .then(setMessages)
+      .catch((error) => {
+        if (unauthorized(error)) setAuthRequired(true);
+      });
+  }, [conversationId]);
+  async function create() {
+    try {
+      const item = await api<Conversation>("/api/conversations", {
+        method: "POST",
+        body: JSON.stringify({ title: "Untitled conversation" }),
+      });
+      setConversations((all) => [item, ...all]);
+      setConversationId(item.id);
+    } catch (error) {
+      if (unauthorized(error)) setAuthRequired(true);
+      else say("Couldn’t create conversation.");
+    }
+  }
+  async function addSide() {
+    const name = window.prompt("Name this side?");
+    if (!name?.trim()) return;
+    try {
+      const item = await api<Side>("/api/sides", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          color: colors[sides.length % colors.length],
+          position: sides.length,
+        }),
+      });
+      setSides((all) => [...all, item]);
+      setSideIndex(sides.length);
+    } catch (error) {
+      if (unauthorized(error)) setAuthRequired(true);
+      else say("Couldn’t add side.");
+    }
+  }
+  async function send(event: FormEvent) {
+    event.preventDefault();
+    if (!draft.trim() || !conversationId || !current) return;
+    try {
+      const item = await api<Message>("/api/messages", {
+        method: "POST",
+        body: JSON.stringify({
+          conversationId,
+          authorSideId: current.id,
+          body: draft,
+        }),
+      });
+      setMessages((all) => [...all, item]);
+      setDraft("");
+    } catch (error) {
+      if (unauthorized(error)) setAuthRequired(true);
+      else say("Couldn’t save message.");
+    }
+  }
+  if (authRequired)
+    return (
+      <main className="shell auth-gate">
+        <section className="auth-card">
+          <div className="brand">
+            Self<span>Talk</span>
+          </div>
+          <p>go ahead, talk to yourself</p>
+          <small>
+            Your journal is private. Sign in with the Google account that owns
+            it.
+          </small>
+          <button
+            className="new-thread"
+            disabled={signingIn}
+            onClick={async () => {
+              setSigningIn(true);
+              try {
+                await signIn("google", { callbackUrl: window.location.origin });
+              } catch {
+                setSigningIn(false);
+                say("Couldn’t start Google sign-in.");
+              }
+            }}
+          >
+            <LogIn size={18} />{" "}
+            {signingIn ? "Opening Google…" : "Sign in with Google"}
+          </button>
+        </section>
+      </main>
+    );
+  return (
+    <main className="shell">
+      <header className="appbar">
+        <div className="brand">
+          Self<span>Talk</span>
+          <small>talk to yourself</small>
+        </div>
+        <div className="account">
+          <InstallButton />
+          <button
+            className="account-indicator"
+            title={account?.user?.email || "Signed in"}
+            onClick={() =>
+              say(
+                `Signed in as ${account?.user?.email || account?.user?.name || "your account"}`,
+              )
+            }
+          >
+            {account?.user?.image ? (
+              <img src={account.user.image} alt="Signed-in account" />
+            ) : (
+              <span>
+                {(account?.user?.name || account?.user?.email || "You")
+                  .slice(0, 1)
+                  .toUpperCase()}
+              </span>
+            )}
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Settings"
+            onClick={() => say("Settings are coming soon.")}
+          >
+            <Settings size={18} />
+          </button>
+        </div>
+      </header>
+      <div className="app-layout">
+        <aside className="library">
+          <button className="new-thread" onClick={() => void create()}>
+            <CirclePlus size={18} /> New conversation
+          </button>
+          <label className="search">
+            <Search size={15} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search messages"
+            />
+          </label>
+          <p className="library-label">Your conversations</p>
+          {conversations.map((item) => (
+            <button
+              className={`thread ${item.id === conversationId ? "selected" : ""}`}
+              key={item.id}
+              onClick={() => setConversationId(item.id)}
+            >
+              <b>{item.title}</b>
+              <small>Private conversation</small>
+            </button>
+          ))}
+        </aside>
+        <section className="chat">
+          <header className="chat-header">
+            <div className="persona">
+              <b>
+                {current && <i style={{ background: current.color }} />}
+                {current?.name || "Your side"}
+              </b>
+              <small>current side</small>
+            </div>
+            <button
+              className="icon-button"
+              aria-label="Search messages"
+              onClick={() =>
+                document
+                  .querySelector<HTMLInputElement>(".search input")
+                  ?.focus()
+              }
+            >
+              <Search size={18} />
+            </button>
+          </header>
+          <div className="messages">
+            {shown.map((message) => (
+              <article
+                key={message.id}
+                className={`message ${message.authorSideId === current?.id ? "right" : "left"}`}
+              >
+                <div
+                  className="bubble"
+                  style={{
+                    background: sides.find(
+                      (side) => side.id === message.authorSideId,
+                    )?.color,
+                  }}
+                >
+                  {message.body}
+                </div>
+                <small>
+                  {new Intl.DateTimeFormat(undefined, {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }).format(new Date(message.createdAt))}
+                </small>
+              </article>
+            ))}
+            {!shown.length && (
+              <p className="empty">go ahead, talk to yourself</p>
+            )}
+          </div>
+          <form className="composer" onSubmit={send}>
+            <input
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="go ahead, talk to yourself"
+              aria-label="Message"
+            />
+            <button
+              type="button"
+              className="icon-button"
+              title="Attachments are not enabled"
+              onClick={() => say("Attachments aren’t part of this journal.")}
+            >
+              <FileUp size={20} />
+            </button>
+            <span className="emoji-picker">
+              <button
+                type="button"
+                className="icon-button"
+                aria-expanded={emojiOpen}
+                onClick={() => setEmojiOpen((open) => !open)}
+              >
+                <Smile size={20} />
+              </button>
+              {emojiOpen && (
+                <span className="emoji-options">
+                  {["😊", "❤️", "😂", "🥹", "✨", "💭"].map((emoji) => (
+                    <button
+                      type="button"
+                      key={emoji}
+                      onClick={() => setDraft((text) => `${text}${emoji}`)}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </span>
+              )}
+            </span>
+            <button
+              type="button"
+              className="cycler"
+              onClick={() =>
+                setSideIndex((index) =>
+                  sides.length ? (index + 1) % sides.length : 0,
+                )
+              }
+              aria-label="Switch to next side"
+            >
+              <ArrowLeftRight size={18} />
+            </button>
+            <button className="send" aria-label="Send message">
+              <Send size={18} />
+            </button>
+          </form>
+        </section>
+      </div>
+      <button className="side-manager" onClick={() => setSidesOpen(true)}>
+        Sides · {sides.map((side) => side.name).join(" / ")}
+      </button>
+      {notice && <p className="toast">{notice}</p>}
+      {sidesOpen && (
+        <div className="modal-backdrop" onClick={() => setSidesOpen(false)}>
+          <section
+            className="side-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button className="close" onClick={() => setSidesOpen(false)}>
+              <X />
+            </button>
+            <h2>Your sides</h2>
+            {sides.map((side, index) => (
+              <button
+                key={side.id}
+                className="side-row"
+                onClick={() => {
+                  setSideIndex(index);
+                  setSidesOpen(false);
+                }}
+              >
+                <i style={{ background: side.color }} />
+                {side.name}
+              </button>
+            ))}
+            <button className="add-side" onClick={() => void addSide()}>
+              <Plus size={16} /> Add another side
+            </button>
+          </section>
+        </div>
+      )}
+    </main>
+  );
 }
