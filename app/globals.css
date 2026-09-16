@@ -457,7 +457,9 @@ button {
   box-shadow: 0 8px 20px #0008;
 }
 .emoji-options .EmojiPickerReact,
-.reaction-picker .EmojiPickerReact { --epr-bg-color: #282d40; --epr-category-label-bg-color: #282d40; --epr-text-color: #edf0fa; --epr-search-input-bg-color: #202536; --epr-search-input-text-color: #edf0fa; }
+.reaction-picker .EmojiPickerReact { --epr-bg-color: #282d40; --epr-category-label-bg-color: #282d40; --epr-text-color: #edf0fa; --epr-search-input-bg-color: #202536; --epr-search-input-text-color: #edf0fa; --epr-search-input-padding: 0 30px; }
+.emoji-options .EmojiPickerReact .epr-search-container input,
+.reaction-picker .EmojiPickerReact .epr-search-container input { padding: var(--epr-search-input-padding); }
 .reaction-picker {
   position: fixed;
   z-index: 3;
@@ -484,16 +486,6 @@ button {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.emoji-options button {
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  padding: 4px;
-  font-size: 17px;
-}
-.emoji-options button:hover {
-  background: #414861;
 }
 .cycler,
 .send {
