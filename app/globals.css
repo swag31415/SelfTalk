@@ -98,6 +98,7 @@ button {
 .shell:not(.settings-shell) {
   height: 100vh;
   height: 100dvh;
+  height: var(--vvh, 100dvh);
   overflow: hidden;
 }
 .shell .appbar,
@@ -164,6 +165,7 @@ button {
   grid-template-columns: 280px minmax(0, 1fr);
   height: calc(100vh - 64px);
   height: calc(100dvh - 64px - env(safe-area-inset-top));
+  height: calc(var(--vvh, 100dvh) - 64px - env(safe-area-inset-top));
 }
 .library {
   padding: 17px;
@@ -663,6 +665,7 @@ button {
   .app-layout {
     height: calc(100vh - 54px);
     height: calc(100dvh - 54px - env(safe-area-inset-top));
+    height: calc(var(--vvh, 100dvh) - 54px - env(safe-area-inset-top));
     display: block;
     position: relative;
   }
