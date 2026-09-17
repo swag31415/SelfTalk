@@ -24,7 +24,14 @@ import {
 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  PointerEvent as ReactPointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { InstallButton } from "./install-button";
 
 type Side = {
@@ -47,6 +54,41 @@ type Message = {
 type Account = {
   user?: { name?: string | null; email?: string | null; image?: string | null };
 };
+
+type GroupPosition = "single" | "first" | "middle" | "last";
+
+const GROUP_WINDOW_MS = 5 * 60 * 1000;
+
+function isSameDay(first: string, second: string) {
+  const firstDate = new Date(first);
+  const secondDate = new Date(second);
+  return (
+    firstDate.getFullYear() === secondDate.getFullYear() &&
+    firstDate.getMonth() === secondDate.getMonth() &&
+    firstDate.getDate() === secondDate.getDate()
+  );
+}
+
+function canGroup(previous: Message, message: Message) {
+  return (
+    previous.authorSideId === message.authorSideId &&
+    !message.replyToMessageId &&
+    isSameDay(previous.createdAt, message.createdAt) &&
+    new Date(message.createdAt).getTime() -
+      new Date(previous.createdAt).getTime() <=
+      GROUP_WINDOW_MS
+  );
+}
+
+function groupPosition(messages: Message[], index: number): GroupPosition {
+  const joinsPrevious = index > 0 && canGroup(messages[index - 1], messages[index]);
+  const joinsNext =
+    index < messages.length - 1 && canGroup(messages[index], messages[index + 1]);
+  if (joinsPrevious && joinsNext) return "middle";
+  if (joinsPrevious) return "last";
+  if (joinsNext) return "first";
+  return "single";
+}
 
 const emojiPickerCategories: CategoryConfig[] = [
   { category: Categories.SMILEYS_PEOPLE, name: "Smileys & People" },
@@ -72,6 +114,153 @@ async function api<T>(url: string, options?: RequestInit) {
   return response.status === 204
     ? (undefined as T)
     : (response.json() as Promise<T>);
+}
+
+type MessageItemProps = {
+  message: Message;
+  position: GroupPosition;
+  isCurrent: boolean;
+  author?: Side;
+  reply?: Message;
+  replyAuthor?: Side;
+  expanded: boolean;
+  onToggleActions: () => void;
+  onReply: () => void;
+  onReact: () => void;
+  onDelete: () => void;
+  onReactToExisting: (reaction: string) => void;
+};
+
+function MessageItem({
+  message,
+  position,
+  isCurrent,
+  author,
+  reply,
+  replyAuthor,
+  expanded,
+  onToggleActions,
+  onReply,
+  onReact,
+  onDelete,
+  onReactToExisting,
+}: MessageItemProps) {
+  const gesture = useRef({ pointerId: -1, startX: 0, startY: 0, swiping: false });
+  const didSwipe = useRef(false);
+  const [swipeDistance, setSwipeDistance] = useState(0);
+  const finishSwipe = (shouldReply = false) => {
+    const wasSwiping = gesture.current.swiping;
+    gesture.current.swiping = false;
+    setSwipeDistance(0);
+    if (shouldReply) onReply();
+    return wasSwiping;
+  };
+  const onPointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    gesture.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      swiping: false,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const onPointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerId !== gesture.current.pointerId) return;
+    const horizontal = event.clientX - gesture.current.startX;
+    const vertical = event.clientY - gesture.current.startY;
+    if (Math.abs(vertical) > Math.abs(horizontal)) {
+      finishSwipe();
+      return;
+    }
+    if (horizontal > 8) {
+      gesture.current.swiping = true;
+      setSwipeDistance(Math.min(horizontal, 62));
+    }
+  };
+  const onPointerUp = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerId !== gesture.current.pointerId) return;
+    const shouldReply =
+      gesture.current.swiping && event.clientX - gesture.current.startX >= 52;
+    didSwipe.current = gesture.current.swiping;
+    finishSwipe(shouldReply);
+  };
+  const time = new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(message.createdAt));
+  return (
+    <article
+      className={`message ${isCurrent ? "right" : "left"} group-${position} ${swipeDistance ? "swiping" : ""}`}
+    >
+      <span className="swipe-reply-indicator" aria-hidden="true">
+        <Reply size={13} />
+      </span>
+      <button
+        className="bubble"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => finishSwipe()}
+        onClick={() => {
+          if (didSwipe.current) {
+            didSwipe.current = false;
+            return;
+          }
+          onToggleActions();
+        }}
+        style={{
+          background: author?.color,
+          transform: swipeDistance ? `translateX(${swipeDistance}px)` : undefined,
+        }}
+        aria-label={`${message.body}. Sent ${new Intl.DateTimeFormat(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(message.createdAt))}`}
+      >
+        {message.replyToMessageId && (
+          <span className={`reply ${reply ? "" : "unavailable"}`}>
+            {reply ? (
+              <>
+                Replying to {replyAuthor?.name || "a side"}: {reply.body}
+              </>
+            ) : (
+              "Original message unavailable"
+            )}
+          </span>
+        )}
+        {message.body}
+      </button>
+      {expanded && (
+        <div className="message-actions">
+          <button aria-label="Reply" onClick={onReply}>
+            <Reply size={14} />
+          </button>
+          <button aria-label="React" onClick={onReact}>
+            <Smile size={14} />
+          </button>
+          <button aria-label="Delete message" onClick={onDelete}>
+            <Trash2 size={14} />
+          </button>
+        </div>
+      )}
+      {expanded && (message.reactions?.length || 0) > 0 && (
+        <div className="reaction-list">
+          {[...new Set(message.reactions?.map((reaction) => reaction.reaction))].map(
+            (reaction) => (
+              <button
+                className="reaction"
+                key={reaction}
+                onClick={() => onReactToExisting(reaction!)}
+              >
+                {reaction} {message.reactions?.filter((item) => item.reaction === reaction).length}
+              </button>
+            ),
+          )}
+        </div>
+      )}
+      {position === "single" || position === "last" ? <small>{time}</small> : null}
+    </article>
+  );
 }
 
 export function Journal() {
@@ -330,6 +519,11 @@ export function Journal() {
       setEmojiOpen(null);
     }
   }
+  function startReply(message: Message) {
+    setReplyTo(message);
+    setActiveMessageId(null);
+    requestAnimationFrame(() => draftInputRef.current?.focus());
+  }
   if (authRequired)
     return (
       <main ref={shellRef} className="shell auth-gate">
@@ -503,7 +697,8 @@ export function Journal() {
             </label>
           </header>
           <div className="messages" ref={messagesRef}>
-            {shown.map((message) => {
+            {shown.map((message, index) => {
+              const previous = shown[index - 1];
               const replied = messages.find(
                 (item) => item.id === message.replyToMessageId,
               );
@@ -512,85 +707,37 @@ export function Journal() {
                 (side) => side.id === message.authorSideId,
               );
               return (
-                <article
+                <div
+                  className={`message-entry ${message.authorSideId === current?.id ? "right" : "left"} group-${groupPosition(shown, index)}`}
                   key={message.id}
-                  className={`message ${message.authorSideId === current?.id ? "right" : "left"}`}
                 >
-                  <button
-                    className="bubble"
-                    onClick={() =>
-                      setActiveMessageId(expanded ? null : message.id)
-                    }
-                    style={{ background: author?.color }}
-                  >
-                    {replied && (
-                      <span className="reply">
-                        Replying to{" "}
-                        {
-                          sides.find((side) => side.id === replied.authorSideId)
-                            ?.name
-                        }
-                        : {replied.body}
-                      </span>
-                    )}
-                    {message.body}
-                  </button>
-                  {expanded && (
-                    <div className="message-actions">
-                      <button
-                        aria-label="Reply"
-                        onClick={() => setReplyTo(message)}
-                      >
-                        <Reply size={14} />
-                      </button>
-                      <button
-                        aria-label="React"
-                        onClick={() => {
-                          setReactionMessageId(message.id);
-                          setEmojiOpen("reaction");
-                        }}
-                      >
-                        <Smile size={14} />
-                      </button>
-                      <button
-                        aria-label="Delete message"
-                        onClick={() => void deleteMessage(message)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                  {(!previous || !isSameDay(previous.createdAt, message.createdAt)) && (
+                    <div className="day-divider">
+                      {new Intl.DateTimeFormat(undefined, {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                      }).format(new Date(message.createdAt))}
                     </div>
                   )}
-                  {expanded && (message.reactions?.length || 0) > 0 && (
-                    <div className="reaction-list">
-                      {[
-                        ...new Set(
-                          message.reactions?.map(
-                            (reaction) => reaction.reaction,
-                          ),
-                        ),
-                      ].map((reaction) => (
-                        <button
-                          className="reaction"
-                          key={reaction}
-                          onClick={() => void react(message.id, reaction!)}
-                        >
-                          {reaction}{" "}
-                          {
-                            message.reactions?.filter(
-                              (item) => item.reaction === reaction,
-                            ).length
-                          }
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  <small>
-                    {new Intl.DateTimeFormat(undefined, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    }).format(new Date(message.createdAt))}
-                  </small>
-                </article>
+                  <MessageItem
+                    message={message}
+                    position={groupPosition(shown, index)}
+                    isCurrent={message.authorSideId === current?.id}
+                    author={author}
+                    reply={replied}
+                    replyAuthor={replied ? sides.find((side) => side.id === replied.authorSideId) : undefined}
+                    expanded={expanded}
+                    onToggleActions={() => setActiveMessageId(expanded ? null : message.id)}
+                    onReply={() => startReply(message)}
+                    onReact={() => {
+                      setReactionMessageId(message.id);
+                      setEmojiOpen("reaction");
+                    }}
+                    onDelete={() => void deleteMessage(message)}
+                    onReactToExisting={(reaction) => void react(message.id, reaction)}
+                  />
+                </div>
               );
             })}
             {!shown.length && (
